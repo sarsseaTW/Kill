@@ -32,10 +32,10 @@ public class Human_NJ_Sneak : MonoBehaviour
                 switch (SneakItem.name)
                 {
                     case "Tree":
-                        MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.04f, CameraV3.z - 0.07f);
+                       // MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.04f, CameraV3.z - 0.07f);
                         break;
                     case "Rock":
-                        MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
+                       // MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
                         break;
                 }
             }

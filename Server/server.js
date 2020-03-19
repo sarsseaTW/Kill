@@ -17,19 +17,25 @@ class Server{
 
         ws.on('message',data => {
             let d = JSON.parse(data)
+            
             switch(d.Type){
                 case 'updateUser':
                     let msg = JSON.parse(d.Data)
                     this.users = this.users.filter(c => c.ID !== msg.User.ID)
                     this.users.push(msg.User)
                     this.broadcast(ws,data)
+                    //p(`ID = ${msg.User.ID}`)
+                    //p(`this.clients => ${this.clients.length}`)
+                    //p(`x = ${msg.User.X}`)
+                    //p(`Y = ${msg.User.Y}`)
+                    //p(`Z = ${msg.User.Z}`)
                     break
                 case 'gameStart':
                     let c = this.createUser(d.Data,ws.name)
-                    p(`gameStart ${ws.name}`)
-                    p(`c.x => ${c.X}`)
-                    p(`c.y => ${c.Y}`)
-                    p(`c.z => ${c.Z}`)
+                    //p(`gameStart ${ws.name}`)
+                    //p(`c.x => ${c.X}`)
+                    //p(`c.y => ${c.Y}`)
+                    //p(`c.z => ${c.Z}`)
                     this.users.push(c)
                     this.emit(ws,{
                         Type: 'gameStart',
@@ -61,9 +67,9 @@ class Server{
             WsName: WsName === undefined? "" : WsName,
             Name: name === undefined? "" : name,
             Hp: 400,
-            Power: 5,
+            Dmg: 5,
             X: -1.8 + Math.random() * 3.6,
-            Y: 0.02,
+            Y: 0.1,
             Z: -1.8 + Math.random() * 3.6,
             IsSneak: false,
             IsJump: false
@@ -74,9 +80,13 @@ class Server{
     }
     /** Push to other clients */
     broadcast(sender, message) {
+        let aaa = 0;
       for (let c of this.clients) {
         if (c.readyState === 1) {
+            aaa++;
           c.send(message)
+          p(`aaa => ${aaa}`)
+          p(`message => ${message}`)
         }
       }
     }

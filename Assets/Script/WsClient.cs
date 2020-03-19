@@ -24,12 +24,16 @@ public class WsClient
     void onMessage(object sender, MessageEventArgs e)
     {
         var msg = JsonUtility.FromJson<Message>(e.Data);
-        Debug.Log("Type : " + msg.Type);
+        var a = msg.Data;
+        //Debug.Log("onMessage - msg.data : " + a);
+        //Debug.Log("onMessage - Type : " + msg.Type);
         OnMessage(msg);
     }
 
     public void SendMessage(string type, object data)
     {
+        //Debug.Log("SendMessage - type : " + type);
+        //Debug.Log("SendMessage - data : " + data);
         _ws.Send(JsonUtility.ToJson(new Message
         {
             Type = type,

@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public float WalkSpeed = 0.1f;
 
     public Human_NJ Human_NJ { get; private set; }
+    int _frameCountWalk;
     public void Init(Human_NJ human_nj)
     {
         Human_NJ = human_nj;
@@ -22,17 +23,27 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         if (Human_NJ == null) return;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+        if (_frameCountWalk % 4 == 0)
         {
-            float Walk_X = Input.GetAxis("Horizontal") * WalkSpeed * Time.deltaTime;
-            transform.Translate(Walk_X, 0, 0);
+            if (Input.GetKey(KeyCode.W))
+            {
+                GameEngine.Instance.Send(Message.ActionWalk_F, new WalkF__Message { UserID = Human_NJ.UserID });
+            }
+            if (Input.GetKey(KeyCode.S))
+            {
+                GameEngine.Instance.Send(Message.ActionWalk_B, new WalkB__Message { UserID = Human_NJ.UserID });
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+                GameEngine.Instance.Send(Message.ActionWalk_L, new WalkL__Message { UserID = Human_NJ.UserID });
+            }
+            if (Input.GetKey(KeyCode.D))
+            {
+                GameEngine.Instance.Send(Message.ActionWalk_R, new WalkR__Message { UserID = Human_NJ.UserID });
+            }
         }
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S))
-        {
-            float Walk_Z = Input.GetAxis("Vertical") * WalkSpeed * Time.deltaTime;
-            transform.Translate(0, 0, Walk_Z);
-        }
-
+        _frameCountWalk++;
+        
         //if (Input.GetKey(KeyCode.W))
         //{
         //    var move = Human_NJ.transform.TransformDirection(Vector3.forward);
@@ -68,5 +79,11 @@ public class PlayerController : MonoBehaviour
         //        }
         //    }
         //}
+    }
+    public void UpdatePos(Vector3 v3)
+    {
+        Human_NJ.X = v3.x;
+        Human_NJ.Y = v3.y;
+        Human_NJ.Z = v3.z;
     }
 }

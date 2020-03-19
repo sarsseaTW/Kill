@@ -1,15 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class Human_NJ : MonoBehaviour
 {
+    public float X;
+    public float Y;
+    public float Z;
     public float WalkSpeed = 0.1f;
     public float RotationSpeed = 100f;
     public float Hp = 400;
     public float Dmg = 5;
     public int UserID;
     public bool IsDead => Hp <= 0;
+    public bool IsSneak;
+    public bool IsJump;
     public float JumpSpeed = 10;
     bool ground = true;
     Quaternion _TargetQuaternion;
@@ -48,9 +53,9 @@ public class Human_NJ : MonoBehaviour
         //    float Walk_Z = Input.GetAxis("Vertical") * WalkSpeed * Time.deltaTime;
         //    transform.Translate(0, 0, Walk_Z);
         //}
-        float rotation = Input.GetAxis("Mouse X") * 300 * Time.deltaTime;
-        transform.Rotate(0, rotation, 0);
-
+        //float rotation = Input.GetAxis("Mouse X") * 300 * Time.deltaTime;
+        //transform.Rotate(0, rotation, 0);
+        //Debug.Log("ID => " + UserID);
         //var distance = Vector3.Distance(transform.position, _MovePosition);
         //if (distance > 0.1f)
         //{
@@ -66,16 +71,36 @@ public class Human_NJ : MonoBehaviour
         if (collision.gameObject.name.Contains("Arms"))
         {
             Damage(Dmg);
-            Debug.Log(Hp);
+            //Debug.Log(Hp);
         }
     }
-    public void SetMovePosition(Vector3 movePos)
+    public Vector3 UpdatePos()
     {
-        _MovePosition = movePos;
+        return transform.position;
     }
-    public void SetRotation(float angle)
+    public void SetPos(Vector3 v3)
     {
-        _TargetQuaternion = Quaternion.Euler(0, angle, 0);
+        transform.position =  v3;
+    }
+    public void SetMovePositionF()
+    {
+        transform.Translate(0, 0, WalkSpeed * Time.deltaTime);
+
+        X = transform.position.x;
+        Y = transform.position.y;
+        Z = transform.position.z;
+    }
+    public void SetMovePositionB()
+    {
+        transform.Translate(0, 0, -WalkSpeed * Time.deltaTime);
+    }
+    public void SetMovePositionL()
+    {
+        transform.Translate(-WalkSpeed * Time.deltaTime, 0, 0);
+    }
+    public void SetMovePositionR()
+    {
+        transform.Translate(WalkSpeed * Time.deltaTime, 0, 0);
     }
     public void Shot()
     {
