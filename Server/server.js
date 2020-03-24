@@ -37,13 +37,13 @@ class Server{
                     //p(`c.y => ${c.Y}`)
                     //p(`c.z => ${c.Z}`)
                     this.users.push(c)
-                    this.emit(ws,{
+                    this.broadcast(ws,JSON.stringify({
                         Type: 'gameStart',
                         Data: JSON.stringify({
                             Users:this.users,
                             Player:c,
                         }),
-                    })
+                    }))
                 break
                 default:
                     this.broadcast(ws,data)
@@ -67,12 +67,13 @@ class Server{
             WsName: WsName === undefined? "" : WsName,
             Name: name === undefined? "" : name,
             Hp: 400,
-            Dmg: 5,
+            Dmg: 100,
             X: -1.8 + Math.random() * 3.6,
             Y: 0.1,
             Z: -1.8 + Math.random() * 3.6,
             IsSneak: false,
-            IsJump: false
+            IsJump: false,
+            SneakName: "Human"
         }
     }
     emit(ws, data){

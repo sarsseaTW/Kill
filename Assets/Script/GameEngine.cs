@@ -18,9 +18,6 @@ public class GameEngine : MonoBehaviour
     int _frameCount;
     public bool GameStarted { get; private set; } = false;
     Stack<Message> _message = new Stack<Message>();
-
-   // Dictionary<int, Human_NJ> user_id_kado = new Dictionary<int, Human_NJ>();
-
     private void Awake()
     {
         Human_NJ.SetActive(false);
@@ -38,8 +35,6 @@ public class GameEngine : MonoBehaviour
     void onMessage(Message msg)
     {
         _message.Push(msg);
-        //Debug.Log("GameEngine - msg => " + msg);
-        //Debug.Log("GameEngine - msg.Data => " + msg.Data);
     }
     private void OnApplicationQuit()
     {
@@ -50,21 +45,7 @@ public class GameEngine : MonoBehaviour
         if (_message.Count > 0)
         {
             var msg = _message.Pop();
-            //Debug.Log("Update - msg => " + msg);
-            //Debug.Log("Update - msg.Type => " + msg.Type);
-            //Debug.Log("Update - msg.Data => " + msg.Data);
-            if (GameStarted)
-            {
-                updateMessageForGameStarted(msg);
-            }
-            else
-            {
-                updateMessage(msg);
-            }
-        }
-        if (GameStarted)
-        {
-            updateServerUser();
+            updateMessageForGameStarted(msg);
         }
     }
     void updateMessageForGameStarted(Message msg)
@@ -77,19 +58,58 @@ public class GameEngine : MonoBehaviour
             case Message.GameStart:
                 {
                     var data = JsonUtility.FromJson<GameStartMessage>(msg.Data);
-                    _users = data.Users;
-                    foreach (var user in _users)
+                    if (GameStarted)
                     {
-                        var obj = createPlayer(user);
-                        human_nj_List.Add(obj);
-                        if (user.ID == data.Player.ID)
+                        var human_nj = FindHumanNJ(data.Player.ID);
+                        if (human_nj == null)
                         {
-                            MainCamera.transform.SetParent(obj.transform, false);
-                            MainCamera.transform.localPosition = new Vector3(0, (float)0.0163, (float)-0.004899);
-                            Player.Init(obj);
+                            _users.Add(data.Player);
+                            human_nj_List.Add(createPlayer(data.Player));
+                        }
+                    }
+                    else
+                    {
+                        _users = data.Users;
+                        foreach (var user in _users)
+                        {
+                            var obj = createPlayer(user);
+                            human_nj_List.Add(obj);
+                            if (user.ID == data.Player.ID)
+                            {
+                                MainCamera.transform.SetParent(obj.transform, false);
+                                MainCamera.transform.localPosition = new Vector3(0, (float)0.0163, (float)-0.004899);
+                                Player.Init(obj);
+                            }
                         }
                     }
                     GameStarted = true;
+                }
+                break;
+            //case Message.UpdateUser:
+            //    {
+            //        var data = JsonUtility.FromJson<UpdateUserMessage>(msg.Data);
+            //        var human_nj = FindHumanNJ(data.User.ID);
+            //        if (human_nj != null)
+            //        {
+            //            human_nj.X = human_nj.UpdatePos().x;
+            //            human_nj.Y = human_nj.UpdatePos().y;
+            //            human_nj.Z = human_nj.UpdatePos().z;
+            //            human_nj.SetPos(new Vector3(human_nj.X, human_nj.Y, human_nj.Z));
+            //        }
+            //        else
+            //        {
+            //            _users.Add(data.User);
+            //            human_nj_List.Add(createPlayer(data.User));
+            //        }
+            //    }
+            //    break;
+            case Message.ExitUser:
+                {
+                    var data = JsonUtility.FromJson<ExitUserMessage>(msg.Data);
+                    var user = _users.First(u => u.WsName == data.WsName);
+                    var human_nj = human_nj_List.First(v => v.UserID == user.ID);
+                    human_nj_List.Remove(human_nj);
+                    Destroy(human_nj.gameObject);
                 }
                 break;
             case Message.ActionWalk_F:
@@ -97,12 +117,6 @@ public class GameEngine : MonoBehaviour
                     var data = JsonUtility.FromJson<WalkF__Message>(msg.Data);
                     var human_nj = FindHumanNJ(data.UserID);
                     human_nj.SetMovePositionF();
-                    //human_nj.X = human_nj.UpdatePos().x;
-                    //human_nj.Y = human_nj.UpdatePos().y;
-                    //human_nj.Z = human_nj.UpdatePos().z;
-                    //Debug.Log("human_nj.X " + human_nj.X);
-                    //Debug.Log("human_nj.Y " + human_nj.Y);
-                    //Debug.Log("human_nj.Z " + human_nj.Z);
                 }
                 break;
             case Message.ActionWalk_B:
@@ -126,55 +140,66 @@ public class GameEngine : MonoBehaviour
                     human_nj.SetMovePositionR();
                 }
                 break;
-            case Message.UpdateUser:
+            case Message.ActionWalk_FL:
                 {
-                    var data = JsonUtility.FromJson<UpdateUserMessage>(msg.Data);
-                    var human_nj = FindHumanNJ(data.User.ID);
-                    if (human_nj != null)
-                    {
-                        //human_nj.X = human_nj.UpdatePos().x;
-                        //human_nj.Y = human_nj.UpdatePos().y;
-                        //human_nj.Z = human_nj.UpdatePos().z;
-                        //Debug.Log("human_nj.X " + human_nj.X);
-                        //Debug.Log("human_nj.Y " + human_nj.Y);
-                        //Debug.Log("human_nj.Z " + human_nj.Z);
-                        //Debug.Log("human_nj_List.Count =>" + human_nj_List.Count);
-                        //for (int i = 0; i < human_nj_List.Count; i++)
-                        //{
-                        //    human_nj_List[i].X = human_nj_List[i].UpdatePos().x;
-                        //    human_nj_List[i].Y = human_nj_List[i].UpdatePos().y;
-                        //    human_nj_List[i].Z = human_nj_List[i].UpdatePos().z;
-                        //    human_nj_List[i].SetPos(new Vector3(human_nj_List[i].X, human_nj_List[i].Y, human_nj_List[i].Z));
-                        //    //Player.UpdatePos(new Vector3(human_nj_List[i].X, human_nj_List[i].Y, human_nj_List[i].Z));
-                         
-                        //    //Debug.Log("human_nj_List.Count UserID " + i.ToString() + " => " + human_nj_List[i].UserID);
-                        //    //Debug.Log("human_nj_List.Count UserID " + i.ToString() + " X => " + human_nj_List[i].X);
-                        //    //Debug.Log("human_nj_List.Count UserID " + i.ToString() + " Y => " + human_nj_List[i].Y);
-                        //    //Debug.Log("human_nj_List.Count UserID " + i.ToString() + " Z => " + human_nj_List[i].Z);
-                        //}
-                    }
-                    else
-                    {
-                        _users.Add(data.User);
-                        human_nj_List.Add(createPlayer(data.User));
-                    }
-                    //Debug.Log("data => " + data);
-                    //Debug.Log("data.User => " + data.User);
-                    //Debug.Log("data.User.X => " + data.User.X);
-                    //Debug.Log("data.User.Y => " + data.User.Y);
-                    //Debug.Log("data.User.Z => " + data.User.Z);
-                    //Debug.Log("data.User.ID => " + data.User.ID);
-                    //Debug.Log("data.User.Name => " + data.User.Name);
-                    //Debug.Log("data.User.WsName => " + data.User.WsName);
+                    var data = JsonUtility.FromJson<WalkFL__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetMovePositionFL();
                 }
                 break;
-            case Message.ExitUser:
+            case Message.ActionWalk_FR:
                 {
-                    var data = JsonUtility.FromJson<ExitUserMessage>(msg.Data);
-                    var user = _users.First(u => u.WsName == data.WsName);
-                    var human_nj = human_nj_List.First(v => v.UserID == user.ID);
-                    human_nj_List.Remove(human_nj);
-                    Destroy(human_nj.gameObject);
+                    var data = JsonUtility.FromJson<WalkFR__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetMovePositionFR();
+                }
+                break;
+            case Message.ActionWalk_BL:
+                {
+                    var data = JsonUtility.FromJson<WalkBL__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetMovePositionBL();
+                }
+                break;
+            case Message.ActionWalk_BR:
+                {
+                    var data = JsonUtility.FromJson<WalkBR__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetMovePositionBR();
+                }
+                break;
+            case Message.ActionView_XL:
+                {
+                    var data = JsonUtility.FromJson<ViewXL__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetViewXL();
+                }
+                break;
+            case Message.ActionView_XR:
+                {
+                    var data = JsonUtility.FromJson<ViewXR__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.SetViewXR();
+                }
+                break;
+            case Message.ActionJump:
+                {
+                    var data = JsonUtility.FromJson<Jump__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    var isjump = human_nj.GetJunp();
+                    if (!isjump) human_nj.SetJump(true);
+                }
+                break;
+            case Message.ActionSneak:
+                {
+                    var data = JsonUtility.FromJson<Sneak__Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    if (!human_nj.IsSneak)
+                    {
+                        human_nj.SetSneak();
+                        human_nj.IsSneak = human_nj.GetSneakStatic();
+                        human_nj.SneakName = human_nj.GetSneakName();
+                    }
                 }
                 break;
             case Message.ActionShot:
@@ -182,6 +207,7 @@ public class GameEngine : MonoBehaviour
                     var data = JsonUtility.FromJson<ActionShotMessage>(msg.Data);
                     var human_nj = FindHumanNJ(data.UserID);
                     human_nj.Shot();
+                    human_nj.IsSneak = human_nj.GetSneakStatic();
                 }
                 break;
             case Message.ActionDamge:
@@ -204,71 +230,11 @@ public class GameEngine : MonoBehaviour
                             }
                             human_nj_List.Clear();
                         }
+                        StartCoroutine(human_nj.Dead());
                     }
-                    StartCoroutine(human_nj.Dead());
                 }
                 break;
         }
-    }
-    void updateMessage(Message msg)
-    {
-        switch (msg.Type)
-        {
-            case Message.Join:
-                _client.SendMessage(Message.GameStart, "Human_NJ");
-                break;
-            case Message.GameStart:
-                {
-                    var data = JsonUtility.FromJson<GameStartMessage>(msg.Data);
-                    _users = data.Users;
-                    foreach(var user in _users)
-                    {
-                        var obj = createPlayer(user);
-                        human_nj_List.Add(obj);
-                        if(user.ID == data.Player.ID)
-                        {
-                            MainCamera.transform.SetParent(obj.transform, false);
-                            MainCamera.transform.localPosition = new Vector3(0, (float)0.0163, (float)-0.004899);
-                            Player.Init(obj);
-                        }
-                    }
-                    GameStarted = true;
-                }
-                break;
-        }
-    }
-    void updateServerUser()
-    {
-    
-        if (_frameCount % 100 == 0)
-        {
-            var msg = new UpdateUserMessage();
-            var c = FindUser(Player.Human_NJ.UserID);//User.Data 
-            c.X = Player.Human_NJ.transform.position.x;
-            c.Y = Player.Human_NJ.transform.position.y;
-            c.Z = Player.Human_NJ.transform.position.z;
-            c.Hp = Player.Human_NJ.Hp;
-            c.Dmg = Player.Human_NJ.Dmg;
-            c.IsSneak = Player.Human_NJ.isSneak;
-            msg.User = c;
-            //Debug.Log("c => " + c);
-            //Debug.Log("c.X => " + c.X);
-            //Debug.Log(" c.Y => " + c.Y);
-            //Debug.Log(" c.Z => " + c.Z);
-            //Debug.Log("c.ID => " + c.ID);
-            //Debug.Log("c.Name => " + c.Name);
-            //Debug.Log("c.WsName => " + c.WsName);
-            //Debug.Log("GameEngine - msg => " + msg);
-            //Debug.Log("GameEngine - msg.User => " + msg.User);
-            //Debug.Log("GameEngine - msg.User.X => " + msg.User.X);
-            //Debug.Log("GameEngine - msg.User.Y => " + msg.User.Y);
-            //Debug.Log("GameEngine - msg.User.Z => " + msg.User.Z);
-            //Debug.Log("GameEngine - msg.User.ID => " + msg.User.ID);
-            //Debug.Log("GameEngine - msg.User.Name => " + msg.User.Name);
-            //Debug.Log("GameEngine - msg.User.WsName => " + msg.User.WsName);
-            Send(Message.UpdateUser, msg);
-        }
-        _frameCount++;
     }
     public void Send(string type,object data)
     {
@@ -292,8 +258,6 @@ public class GameEngine : MonoBehaviour
         human_nj.UserID = u.ID;
         human_nj.Hp = u.Hp;
         human_nj.Dmg = u.Dmg;
-        //human_nj.SetMovePosition(pos);
-
         return human_nj;
     }
 }
@@ -311,6 +275,7 @@ public struct UserData
     public float Z;
     public bool IsSneak;
     public bool IsJump;
+    public string SneakName;
 }
 [Serializable]
 class GameStartMessage
@@ -337,7 +302,7 @@ public struct ActionShotMessage
 public struct ActionDmgMessage
 {
     public int UserID;
-    public int Dmg;
+    public float Dmg;
 }
 [Serializable]
 public struct ActionSneakMessage
@@ -366,6 +331,39 @@ public struct WalkR__Message
 {
     public int UserID;
 }
+public struct WalkFL__Message
+{
+    public int UserID;
+}
+public struct WalkFR__Message
+{
+    public int UserID;
+}
+public struct WalkBL__Message
+{
+    public int UserID;
+}
+public struct WalkBR__Message
+{
+    public int UserID;
+}
+public struct ViewXL__Message
+{
+    public int UserID;
+}
+public struct ViewXR__Message
+{
+    public int UserID;
+}
+public struct Jump__Message
+{
+    public int UserID;
+}
+public struct Sneak__Message
+{
+    public int UserID;
+    public bool IsSneak;
+}
 public partial struct Message
 {
     public const string GameStart = "gameStart";
@@ -381,5 +379,14 @@ public partial struct Message
     public const string ActionWalk_L = "actionWalkL";
     public const string ActionWalk_R = "actionWalkR";
 
+    public const string ActionWalk_FL = "actionWalkFL";
+    public const string ActionWalk_BL = "actionWalkBL";
+    public const string ActionWalk_FR = "actionWalkFR";
+    public const string ActionWalk_BR = "actionWalkBR";
+
+    public const string ActionView_XL = "actionViewXL";
+    public const string ActionView_XR = "actionViewXR";
+
     public const string ActionSneak = "actionSneak";
+    public const string ActionJump = "actionJump";
 }
