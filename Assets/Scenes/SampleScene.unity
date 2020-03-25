@@ -1322,7 +1322,6 @@ GameObject:
   - component: {fileID: 534669905}
   - component: {fileID: 534669904}
   - component: {fileID: 534669903}
-  - component: {fileID: 534669906}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1398,22 +1397,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &534669906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 3273157892840096109, guid: 1170999a13ba7de45b58efe8c81c1d0b,
-    type: 3}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 534669902}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34badc293a438ba40ad487ce815f0610, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Cam_Y_RotationMax: 90
-  Cam_Y_RotationMin: -30
-  Cam_Y_RotationSum: 0
 --- !u!1 &541947902
 GameObject:
   m_ObjectHideFlags: 0
@@ -2556,17 +2539,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f419e77f3b7588d43b2206847e24d150, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerCamera: {fileID: 0}
+  ViewRotation: {x: 0, y: 0, z: 0, w: 0}
+  Rotation: {x: 0, y: 0, z: 0, w: 0}
   X: 0
   Y: 0
   Z: 0
-  WalkSpeed: 0.5
+  WalkSpeed: 0.1
   RotationSpeed: 100
   Hp: 400
   Dmg: 100
   UserID: 0
   IsSneak: 0
-  SneakName: 
   IsJump: 0
+  SneakName: 
   JumpSpeed: 10
   SneakList:
   - {fileID: 1235683670}

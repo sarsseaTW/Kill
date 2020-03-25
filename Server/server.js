@@ -69,7 +69,7 @@ class Server{
             Hp: 400,
             Dmg: 100,
             X: -1.8 + Math.random() * 3.6,
-            Y: 0.1,
+            Y: 0.0195,
             Z: -1.8 + Math.random() * 3.6,
             IsSneak: false,
             IsJump: false,

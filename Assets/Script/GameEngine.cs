@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 
 public class GameEngine : MonoBehaviour
@@ -29,7 +30,10 @@ public class GameEngine : MonoBehaviour
     }
     public void Init()
     {
-        _client = new WsClient("ws://192.168.8.85:3000");
+        //_client = new WsClient("ws://192.168.8.85:3000");
+        string hostname = Dns.GetHostName();
+        IPAddress[] adrList = Dns.GetHostAddresses(hostname);
+        _client = new WsClient("ws://"+ adrList[1].ToString() + ":3000");
         _client.OnMessage = onMessage;
     }
     void onMessage(Message msg)
@@ -50,6 +54,7 @@ public class GameEngine : MonoBehaviour
     }
     void updateMessageForGameStarted(Message msg)
     {
+        //Debug.Log(msg.Type);
         switch (msg.Type)
         {
             case Message.Join:
@@ -59,7 +64,7 @@ public class GameEngine : MonoBehaviour
                 {
                     var data = JsonUtility.FromJson<GameStartMessage>(msg.Data);
                     if (GameStarted)
-                    {
+                    {//誰もいます
                         var human_nj = FindHumanNJ(data.Player.ID);
                         if (human_nj == null)
                         {
@@ -68,7 +73,7 @@ public class GameEngine : MonoBehaviour
                         }
                     }
                     else
-                    {
+                    {//誰もいません
                         _users = data.Users;
                         foreach (var user in _users)
                         {
@@ -78,6 +83,7 @@ public class GameEngine : MonoBehaviour
                             {
                                 MainCamera.transform.SetParent(obj.transform, false);
                                 MainCamera.transform.localPosition = new Vector3(0, (float)0.0163, (float)-0.004899);
+                                
                                 Player.Init(obj);
                             }
                         }
@@ -85,24 +91,6 @@ public class GameEngine : MonoBehaviour
                     GameStarted = true;
                 }
                 break;
-            //case Message.UpdateUser:
-            //    {
-            //        var data = JsonUtility.FromJson<UpdateUserMessage>(msg.Data);
-            //        var human_nj = FindHumanNJ(data.User.ID);
-            //        if (human_nj != null)
-            //        {
-            //            human_nj.X = human_nj.UpdatePos().x;
-            //            human_nj.Y = human_nj.UpdatePos().y;
-            //            human_nj.Z = human_nj.UpdatePos().z;
-            //            human_nj.SetPos(new Vector3(human_nj.X, human_nj.Y, human_nj.Z));
-            //        }
-            //        else
-            //        {
-            //            _users.Add(data.User);
-            //            human_nj_List.Add(createPlayer(data.User));
-            //        }
-            //    }
-            //    break;
             case Message.ExitUser:
                 {
                     var data = JsonUtility.FromJson<ExitUserMessage>(msg.Data);
@@ -112,96 +100,67 @@ public class GameEngine : MonoBehaviour
                     Destroy(human_nj.gameObject);
                 }
                 break;
-            case Message.ActionWalk_F:
+            case Message.ActionWalk:
                 {
-                    var data = JsonUtility.FromJson<WalkF__Message>(msg.Data);
+                    var data = JsonUtility.FromJson<ActionWalk__Massage>(msg.Data);
+                    if(data.UserID == Player.Human_NJ.UserID)
+                    {
+                        break;
+                    }
                     var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionF();
+                    human_nj.X = data.UserPos.x;
+                    human_nj.Y = data.UserPos.y;
+                    human_nj.Z = data.UserPos.z;
                 }
                 break;
-            case Message.ActionWalk_B:
+            case Message.ActionRotation:
                 {
-                    var data = JsonUtility.FromJson<WalkB__Message>(msg.Data);
+                    var data = JsonUtility.FromJson<ActionRotation__Massage>(msg.Data);
+                    if (data.UserID == Player.Human_NJ.UserID)
+                    {
+                        break;
+                    }
                     var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionB();
+                    human_nj.Rotation = data.UserRotation;
                 }
                 break;
-            case Message.ActionWalk_L:
+            case Message.ActionViewRotation:
                 {
-                    var data = JsonUtility.FromJson<WalkL__Message>(msg.Data);
+                    var data = JsonUtility.FromJson<ActionViewRotation__Massage>(msg.Data);
+                    if (data.UserID == Player.Human_NJ.UserID)
+                    {
+                        break;
+                    }
                     var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionL();
+                    human_nj.PlayerCamera = human_nj.getCamera();
+                    human_nj.PlayerCamera.transform.localEulerAngles = new Vector3(-data.UserViewRotation, 0, 0);
                 }
                 break;
-            case Message.ActionWalk_R:
+            case Message.ActionSneak:
                 {
-                    var data = JsonUtility.FromJson<WalkR__Message>(msg.Data);
+                    var data = JsonUtility.FromJson<ActionSneak__Message>(msg.Data);
                     var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionR();
-                }
-                break;
-            case Message.ActionWalk_FL:
-                {
-                    var data = JsonUtility.FromJson<WalkFL__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionFL();
-                }
-                break;
-            case Message.ActionWalk_FR:
-                {
-                    var data = JsonUtility.FromJson<WalkFR__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionFR();
-                }
-                break;
-            case Message.ActionWalk_BL:
-                {
-                    var data = JsonUtility.FromJson<WalkBL__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionBL();
-                }
-                break;
-            case Message.ActionWalk_BR:
-                {
-                    var data = JsonUtility.FromJson<WalkBR__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetMovePositionBR();
-                }
-                break;
-            case Message.ActionView_XL:
-                {
-                    var data = JsonUtility.FromJson<ViewXL__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetViewXL();
-                }
-                break;
-            case Message.ActionView_XR:
-                {
-                    var data = JsonUtility.FromJson<ViewXR__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.SetViewXR();
+
                 }
                 break;
             case Message.ActionJump:
                 {
                     var data = JsonUtility.FromJson<Jump__Message>(msg.Data);
                     var human_nj = FindHumanNJ(data.UserID);
-                    var isjump = human_nj.GetJunp();
-                    if (!isjump) human_nj.SetJump(true);
                 }
                 break;
-            case Message.ActionSneak:
-                {
-                    var data = JsonUtility.FromJson<Sneak__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                    if (!human_nj.IsSneak)
-                    {
-                        human_nj.SetSneak();
-                        human_nj.IsSneak = human_nj.GetSneakStatic();
-                        human_nj.SneakName = human_nj.GetSneakName();
-                    }
-                }
-                break;
+            //case Message.ActionSneak:
+            //    {
+            //        var data = JsonUtility.FromJson<Sneak__Message>(msg.Data);
+            //        var human_nj = FindHumanNJ(data.UserID);
+            //        if (!human_nj.IsSneak)
+            //        {
+            //            human_nj.SetSneak();
+            //            human_nj.IsSneak = human_nj.GetSneakStatic();
+            //            human_nj.SneakName = human_nj.GetSneakName();
+            //        }
+            //    }
+            //    break;
             case Message.ActionShot:
                 {
                     var data = JsonUtility.FromJson<ActionShotMessage>(msg.Data);
@@ -255,6 +214,9 @@ public class GameEngine : MonoBehaviour
         obj.transform.position = pos;
         obj.SetActive(true);
         var human_nj = obj.GetComponent<Human_NJ>();
+        human_nj.X = u.X;
+        human_nj.Y = u.Y;
+        human_nj.Z = u.Z;
         human_nj.UserID = u.ID;
         human_nj.Hp = u.Hp;
         human_nj.Dmg = u.Dmg;
@@ -276,6 +238,9 @@ public struct UserData
     public bool IsSneak;
     public bool IsJump;
     public string SneakName;
+    public Quaternion Rotation;
+    public Camera PlayerCamera;
+    public GameObject SneakObj;
 }
 [Serializable]
 class GameStartMessage
@@ -287,11 +252,6 @@ class GameStartMessage
 class ExitUserMessage
 {
     public string WsName;
-}
-[Serializable]
-struct UpdateUserMessage
-{
-    public UserData User;
 }
 [Serializable]
 public struct ActionShotMessage
@@ -315,54 +275,38 @@ public struct ActionJumpMessage
     public int UserID;
 }
 [Serializable]
-public struct WalkF__Message
-{
-    public int UserID;
-}
-public struct WalkB__Message
-{
-    public int UserID;
-}
-public struct WalkL__Message
-{
-    public int UserID;
-}
-public struct WalkR__Message
-{
-    public int UserID;
-}
-public struct WalkFL__Message
-{
-    public int UserID;
-}
-public struct WalkFR__Message
-{
-    public int UserID;
-}
-public struct WalkBL__Message
-{
-    public int UserID;
-}
-public struct WalkBR__Message
-{
-    public int UserID;
-}
-public struct ViewXL__Message
-{
-    public int UserID;
-}
-public struct ViewXR__Message
-{
-    public int UserID;
-}
 public struct Jump__Message
 {
     public int UserID;
 }
+[Serializable]
 public struct Sneak__Message
 {
     public int UserID;
     public bool IsSneak;
+}
+[Serializable]
+public struct ActionWalk__Massage
+{
+    public int UserID;
+    public Vector3 UserPos;
+}
+[Serializable]
+public struct ActionRotation__Massage
+{
+    public int UserID;
+    public Quaternion UserRotation;
+}
+[Serializable]
+public struct ActionViewRotation__Massage
+{
+    public int UserID;
+    public float UserViewRotation;
+}
+public struct ActionSneak__Message
+{
+    public int UserID;
+    public GameObject SneakObj;
 }
 public partial struct Message
 {
@@ -389,4 +333,9 @@ public partial struct Message
 
     public const string ActionSneak = "actionSneak";
     public const string ActionJump = "actionJump";
+
+    public const string ActionWalk = "actionWalk";
+
+    public const string ActionRotation = "actionRotation";
+    public const string ActionViewRotation = "actionViewRotation";
 }

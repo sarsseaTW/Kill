@@ -4,77 +4,120 @@ using UnityEngine;
 using UnityEngine.UI;
 public class Human_NJ : MonoBehaviour
 {
+    //--------------------------------------------------------------------
+    //---------------------User-------------------------------------------
+    //--------------------------------------------------------------------
+    public GameObject SneakObj;
+    public Camera PlayerCamera;
+    public Quaternion ViewRotation;
+    public Quaternion Rotation;
     public float X;
     public float Y;
     public float Z;
-    public float WalkSpeed = 0.5f;
+    public float WalkSpeed = 0.1f;
     public float RotationSpeed = 100f;
     public float Hp = 400;
     public float Dmg = 100;
     public int UserID;
     public bool IsDead => Hp <= 0;
     public bool IsSneak;
-    public string SneakName;
     public bool IsJump;
+    public string SneakName;
     public float JumpSpeed = 10;
-    Quaternion _TargetQuaternion;
-    Vector3 _MovePosition;
-    // Start is called before the first frame update
+    //--------------------------------------------------------------------
+    //---------------------User Sneak-------------------------------------
+    //--------------------------------------------------------------------
     public GameObject [] SneakList;
     public GameObject PlayerBody;
+    GameObject SneakItem;
+    //--------------------------------------------------------------------
+    //---------------------User Attack------------------------------------
+    //--------------------------------------------------------------------
     public GameObject Arms;
     public GameObject ArmsPoint;
-    GameObject SneakItem;
-    Camera MainCamera;
     Vector3 CameraV3;
+    //--------------------------------------------------------------------
+    //---------------------Bool key---------------------------------------
+    //--------------------------------------------------------------------
+    bool IsRotation;
+    bool IsViewRotation;
+    bool IsWalk;
+    //--------------------------------------------------------------------
+    //---------------------User View--------------------------------------
+    //--------------------------------------------------------------------
+    float Cam_Y_RotationMax = 90;
+    float Cam_Y_RotationMin = -30;
+    float Cam_Y_RotationSum = 0;
+    //--------------------------------------------------------------------
+    //---------------------Init-------------------------------------------
+    //--------------------------------------------------------------------
     void Start()
     {
         GetComponent<Rigidbody>().freezeRotation = true;
-        MainCamera = Camera.main;
-        CameraV3 = MainCamera.transform.localPosition;
+        PlayerCamera = GetComponentInChildren<Camera>();
+        CameraV3 = PlayerCamera.transform.localPosition;
     }
-    private void FixedUpdate()
-    {
-        if (IsDead) { return; }
-        if (IsJump)
-        {
-            GetComponent<Rigidbody>().velocity += new Vector3(0, 1, 0);
-            GetComponent<Rigidbody>().AddForce(Vector3.up * JumpSpeed * Time.deltaTime);
-            IsJump = false;
-        }
-    }
-    // Update is called once per frame
+    //--------------------------------------------------------------------
+    //---------------------User Action------------------------------------
+    //--------------------------------------------------------------------
     void Update()
     {
         if (IsDead) { return; }
-
-
-        X = transform.position.x;
-        Y = transform.position.y;
-        Z = transform.position.z;
-    }
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.name.Contains("Arms"))
+        if (IsWalk || IsJump)
         {
-            GameEngine.Instance.Send(Message.ActionDamge, new ActionDmgMessage { UserID = UserID, Dmg = Dmg });
-            Destroy(collision.gameObject);
+            if (IsJump)
+            {
+                GetComponent<Rigidbody>().velocity += new Vector3(0, 1, 0);
+                GetComponent<Rigidbody>().AddForce(Vector3.up * JumpSpeed * Time.deltaTime);
+            }
+            X = transform.position.x;
+            Y = transform.position.y;
+            Z = transform.position.z;
+            GameEngine.Instance.Send(Message.ActionWalk, new ActionWalk__Massage { UserID = UserID, UserPos = new Vector3(X, Y, Z) });
+           
+            IsWalk = false;
+            IsJump = false;
         }
+        if (IsRotation)
+        {
+            Rotation = transform.rotation;
+            GameEngine.Instance.Send(Message.ActionRotation, new ActionRotation__Massage { UserID = UserID, UserRotation = Rotation});
+            IsRotation = false;
+        }
+        if (IsViewRotation)
+        {
+            PlayerCamera.transform.localEulerAngles = new Vector3(-Cam_Y_RotationSum, 0, 0);
+            //ViewRotation = PlayerCamera.transform.localRotation;
+            GameEngine.Instance.Send(Message.ActionViewRotation, new ActionViewRotation__Massage { UserID = UserID, UserViewRotation = Cam_Y_RotationSum });
+            IsViewRotation = false;
+        }
+        if (IsSneak)
+        {
+
+        }
+        if (X != transform.position.x || Y != transform.position.y || Z != transform.position.z)
+        {
+            SetPos(new Vector3(X, Y, Z));
+        }
+        if (Rotation != transform.rotation)
+        {
+            transform.rotation = Rotation;
+        }
+        //if(ViewRotation != PlayerCamera.transform.localRotation)
+        //{
+        //    PlayerCamera.transform.localRotation = ViewRotation;
+        //}
     }
-    public Vector3 UpdatePos()
+    //--------------------------------------------------------------------
+    //---------------------User Jump--------------------------------------
+    //--------------------------------------------------------------------
+    public void SetJump()
     {
-        return transform.position;
+        IsJump = true;
     }
-    public void SetPos(Vector3 v3)
-    {
-        transform.position =  v3;
-    }
-    public bool GetJunp(){
-        return IsJump;
-    }
-    public void SetJump(bool jp){
-        IsJump = jp;
-    }
+    //--------------------------------------------------------------------
+    //---------------------User Sneak-------------------------------------
+    //--------------------------------------------------------------------
     public bool GetSneakStatic()
     {
         return IsSneak;
@@ -89,76 +132,97 @@ public class Human_NJ : MonoBehaviour
         {
             IsSneak = true;
 
-            SneakItem = SneakList[Random.Range(0, 2)];
+            SneakObj = SneakList[Random.Range(0, 2)];
             PlayerBody.SetActive(false);
-            SneakItem.SetActive(true);
-            SneakName = SneakItem.name;
+            SneakObj.SetActive(true);
+            SneakName = SneakObj.name;
             switch (SneakName)
             {
                 case "Tree":
-                    MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.04f, CameraV3.z - 0.07f);
+                    PlayerCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.04f, CameraV3.z - 0.07f);
                     break;
                 case "Rock":
-                    MainCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
+                    PlayerCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
                     break;
             }
         }
     }
+    //--------------------------------------------------------------------
+    //---------------------User View Rotate-------------------------------
+    //--------------------------------------------------------------------
+    public Camera getCamera()
+    {
+        return PlayerCamera;
+    }
     public void SetViewXL(){
         transform.Rotate(0, RotationSpeed * Time.deltaTime, 0);
+        IsRotation = true;
     }
     public void SetViewXR(){
         transform.Rotate(0, -RotationSpeed * Time.deltaTime, 0);
+        IsRotation = true;
+    }
+    public void SetViewY(float Cam_Y)
+    {
+        Cam_Y_RotationSum += Cam_Y;
+        Cam_Y_RotationSum = Mathf.Clamp(Cam_Y_RotationSum, Cam_Y_RotationMin, Cam_Y_RotationMax);
+        IsViewRotation = true;
+    }
+    //--------------------------------------------------------------------
+    //---------------------User Walk--------------------------------------
+    //--------------------------------------------------------------------
+    public void SetPos(Vector3 v3)
+    {
+        transform.position = v3;
     }
     public void SetMovePositionF()
     {
         transform.Translate(0, 0, WalkSpeed * Time.deltaTime);
+        IsWalk = true;
     }
     public void SetMovePositionB()
     {
         transform.Translate(0, 0, -WalkSpeed * Time.deltaTime);
+        IsWalk = true;
     }
     public void SetMovePositionL()
     {
         transform.Translate(-WalkSpeed * Time.deltaTime, 0, 0);
+        IsWalk = true;
     }
     public void SetMovePositionR()
     {
         transform.Translate(WalkSpeed * Time.deltaTime, 0, 0);
+        IsWalk = true;
     }
-    public void SetMovePositionFL()
-    {
-        transform.Translate(-WalkSpeed * Time.deltaTime, 0, WalkSpeed * Time.deltaTime);
-    }
-    public void SetMovePositionFR()
-    {
-        transform.Translate(WalkSpeed * Time.deltaTime, 0, WalkSpeed * Time.deltaTime);
-    }
-    public void SetMovePositionBL()
-    {
-        transform.Translate(-WalkSpeed * Time.deltaTime, 0, -WalkSpeed * Time.deltaTime);
-    }
-    public void SetMovePositionBR()
-    {
-        transform.Translate(WalkSpeed * Time.deltaTime, 0, -WalkSpeed * Time.deltaTime);
-    }
+    //--------------------------------------------------------------------
+    //-------------------User Attack--------------------------------------
+    //--------------------------------------------------------------------
     public void Shot()
     {
         if (IsSneak)
         {
             IsSneak = false;
-            MainCamera.transform.localPosition = CameraV3;
+            PlayerCamera.transform.localPosition = CameraV3;
             PlayerBody.SetActive(true);
-            SneakItem.SetActive(false);
+            SneakObj.SetActive(false);
         }
         var arms = Instantiate(Arms);
         arms.SetActive(true);
         arms.transform.position = ArmsPoint.transform.position;
-        arms.transform.rotation = MainCamera.transform.rotation;
+        arms.transform.rotation = PlayerCamera.transform.rotation;
     }
     public void Damage(float dmg)
     {
         Hp -= dmg;
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.name.Contains("Arms"))
+        {
+            GameEngine.Instance.Send(Message.ActionDamge, new ActionDmgMessage { UserID = UserID, Dmg = Dmg });
+            Destroy(collision.gameObject);
+        }
     }
     public IEnumerator Dead()
     {
