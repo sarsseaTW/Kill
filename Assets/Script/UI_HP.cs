@@ -27,35 +27,17 @@ public class UI_HP : MonoBehaviour
         }
         if (GameEngine.Instance.Player.Human_NJ.IsDead)
         {
+            Cursor.lockState = CursorLockMode.None;
             Retry.SetActive(true);
         }
         else
         {
+            Cursor.lockState = CursorLockMode.Locked;
             Retry.SetActive(false);
         }
     }
     public void OnClickRetry()
     {
-        Debug.Log("aaasda");
         GameEngine.Instance.Init();
-    }
-    private void OnMouseEnter()
-    {
-        Debug.Log("OnMouseEnter");
-    }
-
-    private void OnMouseExit()
-    {
-        Debug.Log("OnMouseExit");
-    }
-
-    private void OnMouseDown()
-    {
-        Debug.Log("OnMouseDown");
-    }
-
-    private void OnMouseUp()
-    {
-        Debug.Log("OnMouseUp");
     }
 }

@@ -6,7 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     public float fireRate = 0.5f;
     float nextFire = 0;
-    public float WalkSpeed = 0.1f;
 
     public Human_NJ Human_NJ { get; private set; }
     public void Init(Human_NJ human_nj)
@@ -16,7 +15,6 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
     }
     // Update is called once per frame
     void Update()
@@ -28,40 +26,23 @@ public class PlayerController : MonoBehaviour
             nextFire = Time.time + fireRate;
             GameEngine.Instance.Send(Message.ActionShot, new ActionShotMessage { UserID = Human_NJ.UserID });
         }
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
         {
-            Human_NJ.SetMovePositionF();
+            float h = Input.GetAxis("Horizontal");
+            float v = Input.GetAxis("Vertical");
+            Human_NJ.SetMove(h, v);
         }
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
         {
-            Human_NJ.SetMovePositionB();
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            Human_NJ.SetMovePositionL();
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            Human_NJ.SetMovePositionR();
-        }
-        if (Input.GetAxis("Mouse X") > 0)
-        {
-            Human_NJ.SetViewXL();
-        }
-        if (Input.GetAxis("Mouse X") < 0)
-        {
-            Human_NJ.SetViewXR();
-        }
-        if(Input.GetAxis("Mouse Y") != 0)
-        {
+            float rx = Input.GetAxis("Mouse X") * 3;
             float ry = Input.GetAxis("Mouse Y") * 3;
-            Human_NJ.SetViewY(ry);
+            Human_NJ.SetView(rx,ry);
         }
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time > nextFire)
-        {
-            nextFire = Time.time + fireRate;
-            Human_NJ.SetJump();
-        }
+        //if (Input.GetKeyDown(KeyCode.Space) && Time.time > nextFire)
+        //{
+        //    nextFire = Time.time + fireRate;
+        //    Human_NJ.SetJump();
+        //}
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             Human_NJ.SetSneak();

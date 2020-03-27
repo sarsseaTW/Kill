@@ -2379,6 +2379,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1615504891}
+  - {fileID: 1450934649}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2539,25 +2540,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f419e77f3b7588d43b2206847e24d150, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerCamera: {fileID: 0}
-  ViewRotation: {x: 0, y: 0, z: 0, w: 0}
-  Rotation: {x: 0, y: 0, z: 0, w: 0}
+  UserID: 0
+  Hp: 400
+  Dmg: 100
   X: 0
   Y: 0
   Z: 0
-  WalkSpeed: 0.1
-  RotationSpeed: 100
-  Hp: 400
-  Dmg: 100
-  UserID: 0
+  ViewRotation: {x: 0, y: 0, z: 0, w: 0}
+  Rotation: {x: 0, y: 0, z: 0, w: 0}
+  PlayerCamera: {fileID: 0}
   IsSneak: 0
-  IsJump: 0
   SneakName: 
-  JumpSpeed: 10
+  PlayerBody: {fileID: 1041926293}
+  SneakObj: {fileID: 0}
   SneakList:
   - {fileID: 1235683670}
   - {fileID: 560928368}
-  PlayerBody: {fileID: 1041926293}
   Arms: {fileID: 4546549227265789392, guid: 187e0beacf3026c4bbc15c38a0ad0b2a, type: 3}
   ArmsPoint: {fileID: 760261363}
 --- !u!4 &977874476
@@ -2569,7 +2567,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977874473}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.0188, z: 0}
+  m_LocalPosition: {x: 0, y: 0.017, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1640912563}
@@ -2997,7 +2995,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1235683670}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.029021606, z: 0}
+  m_LocalPosition: {x: 0, y: 0.031, z: 0}
   m_LocalScale: {x: 0.020737385, y: 0.0967722, z: 0.020737385}
   m_Children:
   - {fileID: 981598985}
@@ -4607,6 +4605,85 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1447318515}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1450934648
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1450934649}
+  - component: {fileID: 1450934651}
+  - component: {fileID: 1450934650}
+  m_Layer: 5
+  m_Name: DebugText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1450934649
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450934648}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 876055642}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 378, y: -136}
+  m_SizeDelta: {x: 1277.2, y: 535.92}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1450934650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450934648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.03798599, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 61
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 10
+    m_MaxSize: 266
+    m_Alignment: 0
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: '
+
+'
+--- !u!222 &1450934651
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450934648}
+  m_CullTransparentMesh: 0
 --- !u!1001 &1452533034
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6328,7 +6405,7 @@ MonoBehaviour:
   m_CancelButton: Cancel
   m_InputActionsPerSecond: 10
   m_RepeatDelay: 0.5
-  m_ForceModuleActive: 1
+  m_ForceModuleActive: 0
 --- !u!114 &1952035285
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -30,10 +30,10 @@ public class GameEngine : MonoBehaviour
     }
     public void Init()
     {
-        //_client = new WsClient("ws://192.168.8.85:3000");
-        string hostname = Dns.GetHostName();
-        IPAddress[] adrList = Dns.GetHostAddresses(hostname);
-        _client = new WsClient("ws://"+ adrList[1].ToString() + ":3000");
+        //string hostname = Dns.GetHostName();
+        //IPAddress[] adrList = Dns.GetHostAddresses(hostname);
+        _client = new WsClient("ws://192.168.8.85:3000");
+        //_client = new WsClient("ws://"+ adrList[1].ToString() + ":3000");
         _client.OnMessage = onMessage;
     }
     void onMessage(Message msg)
@@ -100,73 +100,37 @@ public class GameEngine : MonoBehaviour
                     Destroy(human_nj.gameObject);
                 }
                 break;
-            case Message.ActionWalk:
+            case Message.UpdatePlayerStatic:
                 {
-                    var data = JsonUtility.FromJson<ActionWalk__Massage>(msg.Data);
-                    if(data.UserID == Player.Human_NJ.UserID)
+                    var data = JsonUtility.FromJson<UpdatePlayerStatic__Massage>(msg.Data);
+                    if (data.UserID != Player.Human_NJ.UserID)
                     {
-                        break;
-                    }
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.X = data.UserPos.x;
-                    human_nj.Y = data.UserPos.y;
-                    human_nj.Z = data.UserPos.z;
-                }
-                break;
-            case Message.ActionRotation:
-                {
-                    var data = JsonUtility.FromJson<ActionRotation__Massage>(msg.Data);
-                    if (data.UserID == Player.Human_NJ.UserID)
-                    {
-                        break;
-                    }
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.Rotation = data.UserRotation;
-                }
-                break;
-            case Message.ActionViewRotation:
-                {
-                    var data = JsonUtility.FromJson<ActionViewRotation__Massage>(msg.Data);
-                    if (data.UserID == Player.Human_NJ.UserID)
-                    {
-                        break;
-                    }
-                    var human_nj = FindHumanNJ(data.UserID);
-                    human_nj.PlayerCamera = human_nj.getCamera();
-                    human_nj.PlayerCamera.transform.localEulerAngles = new Vector3(-data.UserViewRotation, 0, 0);
-                }
-                break;
-            case Message.ActionSneak:
-                {
-                    var data = JsonUtility.FromJson<ActionSneak__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
+                        var human_nj = FindHumanNJ(data.UserID);
+                        human_nj.X = data.UserPos.x;//Global
+                        human_nj.Y = data.UserPos.y;//Global
+                        human_nj.Z = data.UserPos.z;//Global
+                        human_nj.Rotation = data.UserRotation;//Global
+                        human_nj.IsSneak = data.IsSneak;
+                        human_nj.SneakName = data.SneakName;
 
+                        human_nj.UpdateOtherPlayerStatic();//Local
+                        //if (_frameCount % 2 == 0)
+                        //{
+                           
+                        //}
+                        //human_nj.PlayerCamera = human_nj.getCamera();
+                        //human_nj.PlayerCamera.transform.localEulerAngles = new Vector3(-data.UserViewRotation, 0, 0);
+                    }
+                    _frameCount++;
                 }
                 break;
-            case Message.ActionJump:
-                {
-                    var data = JsonUtility.FromJson<Jump__Message>(msg.Data);
-                    var human_nj = FindHumanNJ(data.UserID);
-                }
-                break;
-            //case Message.ActionSneak:
-            //    {
-            //        var data = JsonUtility.FromJson<Sneak__Message>(msg.Data);
-            //        var human_nj = FindHumanNJ(data.UserID);
-            //        if (!human_nj.IsSneak)
-            //        {
-            //            human_nj.SetSneak();
-            //            human_nj.IsSneak = human_nj.GetSneakStatic();
-            //            human_nj.SneakName = human_nj.GetSneakName();
-            //        }
-            //    }
-            //    break;
             case Message.ActionShot:
                 {
                     var data = JsonUtility.FromJson<ActionShotMessage>(msg.Data);
                     var human_nj = FindHumanNJ(data.UserID);
                     human_nj.Shot();
-                    human_nj.IsSneak = human_nj.GetSneakStatic();
+
+                    human_nj.UpdateOtherPlayerStatic();//Local
                 }
                 break;
             case Message.ActionDamge:
@@ -235,12 +199,11 @@ public struct UserData
     public float X;
     public float Y;
     public float Z;
-    public bool IsSneak;
-    public bool IsJump;
-    public string SneakName;
+    public float ViewRotation;
     public Quaternion Rotation;
     public Camera PlayerCamera;
-    public GameObject SneakObj;
+    public bool IsSneak;
+    public string SneakName;
 }
 [Serializable]
 class GameStartMessage
@@ -265,77 +228,24 @@ public struct ActionDmgMessage
     public float Dmg;
 }
 [Serializable]
-public struct ActionSneakMessage
-{
-    public int UserID;
-}
-[Serializable]
-public struct ActionJumpMessage
-{
-    public int UserID;
-}
-[Serializable]
-public struct Jump__Message
-{
-    public int UserID;
-}
-[Serializable]
-public struct Sneak__Message
-{
-    public int UserID;
-    public bool IsSneak;
-}
-[Serializable]
-public struct ActionWalk__Massage
+public struct UpdatePlayerStatic__Massage
 {
     public int UserID;
     public Vector3 UserPos;
-}
-[Serializable]
-public struct ActionRotation__Massage
-{
-    public int UserID;
     public Quaternion UserRotation;
-}
-[Serializable]
-public struct ActionViewRotation__Massage
-{
-    public int UserID;
     public float UserViewRotation;
-}
-public struct ActionSneak__Message
-{
-    public int UserID;
-    public GameObject SneakObj;
+    public bool IsSneak;
+    public string SneakName;
 }
 public partial struct Message
 {
     public const string GameStart = "gameStart";
     public const string ExitUser = "exitUser";
     public const string Join = "join";
-    public const string UpdateUser = "updateUser";
 
     public const string ActionShot = "actionShot";
     public const string ActionDamge = "actionDamage";
 
-    public const string ActionWalk_F = "actionWalkF";
-    public const string ActionWalk_B = "actionWalkB";
-    public const string ActionWalk_L = "actionWalkL";
-    public const string ActionWalk_R = "actionWalkR";
+    public const string UpdatePlayerStatic = "updatePlayerStatic";
 
-    public const string ActionWalk_FL = "actionWalkFL";
-    public const string ActionWalk_BL = "actionWalkBL";
-    public const string ActionWalk_FR = "actionWalkFR";
-    public const string ActionWalk_BR = "actionWalkBR";
-
-    public const string ActionView_XL = "actionViewXL";
-    public const string ActionView_XR = "actionViewXR";
-
-    public const string ActionSneak = "actionSneak";
-    public const string ActionJump = "actionJump";
-
-    public const string ActionWalk = "actionWalk";
-
-    public const string ActionRotation = "actionRotation";
-    public const string ActionViewRotation = "actionViewRotation";
 }

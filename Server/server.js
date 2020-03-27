@@ -7,6 +7,7 @@ class Server{
         this.ws = new WebSocket.Server({port:port})
         this.ws.on('connection',this.connectionListener.bind(this))
         p(`server running at port ${port}\n`)
+        this.time = 0;
     }
     connectionListener(ws,require){
         this.clients = this.clients.filter(c => c.readyState === 1)
@@ -24,18 +25,9 @@ class Server{
                     this.users = this.users.filter(c => c.ID !== msg.User.ID)
                     this.users.push(msg.User)
                     this.broadcast(ws,data)
-                    //p(`ID = ${msg.User.ID}`)
-                    //p(`this.clients => ${this.clients.length}`)
-                    //p(`x = ${msg.User.X}`)
-                    //p(`Y = ${msg.User.Y}`)
-                    //p(`Z = ${msg.User.Z}`)
                     break
                 case 'gameStart':
                     let c = this.createUser(d.Data,ws.name)
-                    //p(`gameStart ${ws.name}`)
-                    //p(`c.x => ${c.X}`)
-                    //p(`c.y => ${c.Y}`)
-                    //p(`c.z => ${c.Z}`)
                     this.users.push(c)
                     this.broadcast(ws,JSON.stringify({
                         Type: 'gameStart',
@@ -45,6 +37,12 @@ class Server{
                         }),
                     }))
                 break
+                case 'updatePlayerStatic':
+                    if(this.time % this.clients.length == 0){
+                        this.broadcast(ws,data)
+                    }
+                    this.time++
+                    break
                 default:
                     this.broadcast(ws,data)
             }
@@ -70,10 +68,7 @@ class Server{
             Dmg: 100,
             X: -1.8 + Math.random() * 3.6,
             Y: 0.0195,
-            Z: -1.8 + Math.random() * 3.6,
-            IsSneak: false,
-            IsJump: false,
-            SneakName: "Human"
+            Z: -1.8 + Math.random() * 3.6
         }
     }
     emit(ws, data){
