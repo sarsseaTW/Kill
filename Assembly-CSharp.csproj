@@ -66,8 +66,10 @@
     <Compile Include="Assets\Script\Human_NJ.cs" />
     <Compile Include="Assets\Script\Human_NJ_Fire.cs" />
     <Compile Include="Assets\Script\Human_NJ_Sneak.cs" />
+    <Compile Include="Assets\Script\NPC_Action.cs" />
     <Compile Include="Assets\Script\PlayerController.cs" />
     <Compile Include="Assets\Script\PlayerViewController.cs" />
+    <Compile Include="Assets\Script\SwordAction.cs" />
     <Compile Include="Assets\Script\UI_HP.cs" />
     <Compile Include="Assets\Script\WsClient.cs" />
     <Compile Include="Assets\websocket-sharp-master\websocket-sharp\AssemblyInfo.cs" />

@@ -37,12 +37,6 @@ class Server{
                         }),
                     }))
                 break
-                case 'updatePlayerStatic':
-                    if(this.time % this.clients.length == 0){
-                        this.broadcast(ws,data)
-                    }
-                    this.time++
-                    break
                 default:
                     this.broadcast(ws,data)
             }
@@ -67,8 +61,11 @@ class Server{
             Hp: 400,
             Dmg: 100,
             X: -1.8 + Math.random() * 3.6,
-            Y: 0.0195,
-            Z: -1.8 + Math.random() * 3.6
+            Y: 1.5,
+            Z: -1.8 + Math.random() * 3.6,
+            IsSneak: false,
+            SneakName: "Human",
+            tokuten: 0
         }
     }
     emit(ws, data){
@@ -81,8 +78,8 @@ class Server{
         if (c.readyState === 1) {
             aaa++;
           c.send(message)
-          p(`aaa => ${aaa}`)
-          p(`message => ${message}`)
+          //p(`aaa => ${aaa}`)
+          //p(`message => ${message}`)
         }
       }
     }

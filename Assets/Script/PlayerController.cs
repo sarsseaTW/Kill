@@ -4,8 +4,20 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float fireRate = 0.5f;
+    float fireRate = 1f;
     float nextFire = 0;
+    float swordRate = 1f;
+    float nextSword = 0;
+
+    float jumpRate = 1f;
+    float nextJump = 0;
+
+    float DobjumpRate = 1f;
+    float nextDobJump = 0;
+    bool IsWalkStop;
+
+    float SneakRate = 3;
+    float nextSneak = 0;
 
     public Human_NJ Human_NJ { get; private set; }
     public void Init(Human_NJ human_nj)
@@ -20,9 +32,13 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         if (Human_NJ == null) return;
+        if (Input.GetButton("Fire2") && Time.time - nextSword > swordRate)
+        {
+            nextSword = Time.time;
+            GameEngine.Instance.Send(Message.ActionSword, new ActionSwordMessage { UserID = Human_NJ.UserID });
+        }
         if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
-            //&& Time.time > nextFire
             nextFire = Time.time + fireRate;
             GameEngine.Instance.Send(Message.ActionShot, new ActionShotMessage { UserID = Human_NJ.UserID });
         }
@@ -31,6 +47,43 @@ public class PlayerController : MonoBehaviour
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
             Human_NJ.SetMove(h, v);
+            Human_NJ.SetIsWalkStop(false);
+        }
+        if (Input.GetKeyUp(KeyCode.W))
+        {
+            if (!(Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)))
+            {
+                IsWalkStop = true;
+            }
+            else IsWalkStop = false;
+            Human_NJ.SetIsWalkStop(IsWalkStop);
+        }
+        else if (Input.GetKeyUp(KeyCode.A))
+        {
+            if (!(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)))
+            {
+                IsWalkStop = true;
+            }
+            else IsWalkStop = false;
+            Human_NJ.SetIsWalkStop(IsWalkStop);
+        }
+        else if (Input.GetKeyUp(KeyCode.S))
+        {
+            if (!(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)))
+            {
+                IsWalkStop = true;
+            }
+            else IsWalkStop = false;
+            Human_NJ.SetIsWalkStop(IsWalkStop);
+        }
+        else if (Input.GetKeyUp(KeyCode.D))
+        {
+            if (!(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.A)))
+            {
+                IsWalkStop = true;
+            }
+            else IsWalkStop = false;
+            Human_NJ.SetIsWalkStop(IsWalkStop);
         }
         if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
         {
@@ -38,15 +91,23 @@ public class PlayerController : MonoBehaviour
             float ry = Input.GetAxis("Mouse Y") * 3;
             Human_NJ.SetView(rx,ry);
         }
-        //if (Input.GetKeyDown(KeyCode.Space) && Time.time > nextFire)
-        //{
-        //    nextFire = Time.time + fireRate;
-        //    Human_NJ.SetJump();
-        //}
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time > nextJump)
         {
+            nextJump = Time.time + jumpRate;
+            Human_NJ.SetJump();
+        }
+        else 
+        {
+            if (Input.GetKeyDown(KeyCode.Space) && Time.time > nextDobJump)
+            {
+                nextDobJump = Time.time + DobjumpRate;
+                Human_NJ.SetDobJump();
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.LeftControl) && Time.time - nextSneak > SneakRate)
+        {
+            nextSneak = Time.time;
             Human_NJ.SetSneak();
-           // GameEngine.Instance.Send(Message.ActionSneak, new Sneak__Message { UserID = Human_NJ.UserID, IsSneak = Human_NJ.IsSneak });
         }
     }
 }

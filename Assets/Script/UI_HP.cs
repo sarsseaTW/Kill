@@ -6,14 +6,11 @@ public class UI_HP : MonoBehaviour
 {
     public RectTransform HP_Bar, HP_Hurt;
     public GameObject Retry;
-    //float hp = 400;
-    // Start is called before the first frame update
+    int time = 0;
     void Start()
     {
         Retry.SetActive(false);
     }
-
-    // Update is called once per frame
     void Update()
     {
         if (GameEngine.Instance.Player.Human_NJ == null)
@@ -39,5 +36,6 @@ public class UI_HP : MonoBehaviour
     public void OnClickRetry()
     {
         GameEngine.Instance.Init();
+        Retry.SetActive(false);
     }
 }

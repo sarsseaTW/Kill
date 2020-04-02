@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ArmsWalk : MonoBehaviour
 {
-    public float Speed = 10000f;
-    public float Duration = 3;
+    float Speed = 0.002f;
+    float Duration = 5;
 
     float createdTime_;
     // Start is called before the first frame update
