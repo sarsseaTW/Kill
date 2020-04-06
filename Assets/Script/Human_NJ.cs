@@ -63,18 +63,24 @@ public class Human_NJ : MonoBehaviour
     //--------------------------------------------------------------------
     public Text tokutenbenn;
     //--------------------------------------------------------------------
+    //---------------------Skill------------------------------------------
+    //--------------------------------------------------------------------
+    public GameObject CAM_SkillPoint;
+    public GameObject Skill_Eff;
+    public GameObject Skill_Eff2;
+    //--------------------------------------------------------------------
     //---------------------Init-------------------------------------------
     //--------------------------------------------------------------------
     float updateTime = 0.5f;
     float updateTime_DMG;
     int updateTime_Walk;
-    IEnumerator TimerEvent;
+    IEnumerator TimerEvent_Walk;
+    IEnumerator TimerEvent_Skill;
     void Start()
     {
         GetComponent<Rigidbody>().freezeRotation = true;
         PlayerCamera = GetComponentInChildren<Camera>();
         CameraV3 = PlayerCamera.transform.localPosition;
-
         MainUserAction();
     }
     //--------------------------------------------------------------------
@@ -87,6 +93,7 @@ public class Human_NJ : MonoBehaviour
         X = transform.position.x;
         Y = transform.position.y;
         Z = transform.position.z;
+        Rotation = transform.rotation;
         if (Input.GetKeyDown(KeyCode.Q))
         {
             tokuten += 30;
@@ -135,7 +142,7 @@ public class Human_NJ : MonoBehaviour
     {
         if (!IsSneak)
         {
-            SneakObj = SneakList[Random.Range(0, 7)];
+            SneakObj = SneakList[Random.Range(0, 9)];
             SneakName = SneakObj.name;
             PlayerBody.SetActive(false);
             SneakObj.SetActive(true);
@@ -162,6 +169,12 @@ public class Human_NJ : MonoBehaviour
                 case "Chicken":
                     PlayerCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
                     break;
+                case "Tortiose":
+                    PlayerCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
+                    break;
+                case "Board":
+                    PlayerCamera.transform.localPosition = new Vector3(CameraV3.x, CameraV3.y + 0.005f, CameraV3.z - 0.04f);
+                    break;
             }
             IsSneak = true;
             MainUserAction();
@@ -177,7 +190,6 @@ public class Human_NJ : MonoBehaviour
     public void SetView(float Cam_X, float Cam_Y)
     {
         transform.Rotate(0, Cam_X * RotationSpeed, 0);
-        Rotation = transform.rotation;
         MainUserAction();
 
         Cam_Y_RotationSum += Cam_Y;
@@ -197,7 +209,7 @@ public class Human_NJ : MonoBehaviour
         if (TimerBool)
         {
             TimerBool = false;
-            StopCoroutine(TimerEvent);// stop Timer
+            StopCoroutine(TimerEvent_Walk);// stop Timer
         }
         if (ws)
         {
@@ -224,8 +236,8 @@ public class Human_NJ : MonoBehaviour
             (int)(Z * 1000) != (int)(transform.position.z * 1000))
         {
             transform.position = new Vector3(X, Y, Z);
-            TimerEvent = GuessOtherPlayerPos(transform.position, v, h);
-            StartCoroutine(TimerEvent);//start Timer
+            TimerEvent_Walk = GuessOtherPlayerPos(transform.position, v, h);
+            StartCoroutine(TimerEvent_Walk);//start Timer
         }
         if (IsSneak)
         {
@@ -253,6 +265,12 @@ public class Human_NJ : MonoBehaviour
                 case "Chicken":
                     SneakObj = SneakList[6];
                     break;
+                case "Tortiose":
+                    SneakObj = SneakList[7];
+                    break;
+                case "Board":
+                    SneakObj = SneakList[8];
+                    break;
             }
             SneakObj.SetActive(true);
         }
@@ -274,7 +292,6 @@ public class Human_NJ : MonoBehaviour
             X = transform.position.x;
             Y = transform.position.y;
             Z = transform.position.z;
-            //transform.position = new Vector3(X, Y, Z);
             F -= 1;
             yield return new WaitForEndOfFrame();
         }
@@ -347,12 +364,13 @@ public class Human_NJ : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.name.Contains("Sword") && Time.time - updateTime_DMG > updateTime)
+        if ((other.gameObject.name.Contains("Sword")|| other.gameObject.name.Contains("Skill")) && Time.time - updateTime_DMG > updateTime)
         {
             updateTime_DMG = Time.time;
 
             string gameObjName = other.gameObject.name;
             gameObjName = gameObjName.Remove(gameObjName.IndexOf("S"), 5);
+            
             if (UserID != int.Parse(gameObjName))
             {
                 if (UserID == GameEngine.Instance.GameEngineID)
@@ -419,5 +437,169 @@ public class Human_NJ : MonoBehaviour
     public void UpdateTokutenbann(string tokutenbannText)
     {
         tokutenbenn.text = tokutenbannText;
+    }
+    //--------------------------------------------------------------------
+    //---------------------Update Skill-----------------------------------
+    //--------------------------------------------------------------------
+    public void skillCAM()
+    {
+        if (IsDead) { return; }
+        PlayerCamera.transform.position = CAM_SkillPoint.transform.position;
+        PlayerCamera.transform.localRotation = CAM_SkillPoint.transform.localRotation;
+    }
+    public void ActionSkill()
+    {
+        if (IsDead) { return; }
+        Physics.IgnoreLayerCollision(0, 9, true);
+        Hp -= 50;
+        if (IsSneak)
+        {
+            IsSneak = false;
+            PlayerCamera.transform.localPosition = CameraV3;
+            PlayerBody.SetActive(true);
+            SneakObj.SetActive(false);
+            MainUserAction();
+        }
+        var skill = Instantiate(Skill_Eff);
+        skill.SetActive(true);
+        skill.gameObject.name = UserID + "Skill";
+        skill.transform.SetParent(gameObject.transform, false);
+        
+        StartCoroutine(Skill_1hit());
+    }
+    public void ActionSkill2()
+    {
+        if (IsDead) { return; }
+        Physics.IgnoreLayerCollision(0, 9, true);
+        Hp -= 200;
+        if (IsSneak)
+        {
+            IsSneak = false;
+            PlayerCamera.transform.localPosition = CameraV3;
+            PlayerBody.SetActive(true);
+            SneakObj.SetActive(false);
+            MainUserAction();
+        }
+        var skill = Instantiate(Skill_Eff2);
+        skill.SetActive(true);
+        skill.gameObject.name = UserID + "Skill2";
+        skill.transform.SetParent(gameObject.transform, false);
+
+        StartCoroutine(Skill_1hit());
+    }
+    //---------- 1 hit -------------------------
+    public IEnumerator Skill_1hit()
+    {
+        yield return new WaitForSeconds(3);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_2Read());
+    }
+    //---------- 2 hit -------------------------
+    public IEnumerator Skill_2Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_2hit());
+    }
+    public IEnumerator Skill_2hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_3Read());
+    }
+    //---------- 3 hit -------------------------
+    public IEnumerator Skill_3Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_3hit());
+    }
+    public IEnumerator Skill_3hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_4Read());
+    }
+    //---------- 4 hit -------------------------
+    public IEnumerator Skill_4Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_4hit());
+    }
+    public IEnumerator Skill_4hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_5Read());
+    }
+    //---------- 5 hit -------------------------
+    public IEnumerator Skill_5Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_5hit());
+    }
+    public IEnumerator Skill_5hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_6Read());
+    }
+    //---------- 6 hit -------------------------
+    public IEnumerator Skill_6Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_6hit());
+    }
+    public IEnumerator Skill_6hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward*1f, ForceMode.Impulse);
+        StartCoroutine(Skill_7Read());
+    }
+    //---------- 7 hit -------------------------
+    public IEnumerator Skill_7Read()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+
+        StartCoroutine(Skill_7hit());
+    }
+    public IEnumerator Skill_7hit()
+    {
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.up*3, ForceMode.Impulse);
+        StartCoroutine(Skill_CloseEff());
+    }
+    //---------- 7 hit -------------------------
+    public IEnumerator Skill_CloseEff()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Physics.IgnoreLayerCollision(0, 9, false);
+        PlayerController.IsSkill = false;
+
+        PlayerCamera.transform.localPosition = CameraV3;
+        PlayerCamera.transform.localRotation = CAM.transform.localRotation;
+        MainUserAction();
     }
 }

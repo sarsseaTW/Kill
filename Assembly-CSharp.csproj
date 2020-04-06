@@ -60,6 +60,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\CameraTarget.cs" />
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\EffectController.cs" />
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\EffectDemo.cs" />
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\EffectShaderPropertyStr.cs" />
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\RenderEffect.cs" />
+    <Compile Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Script\TransformExtension.cs" />
     <Compile Include="Assets\Script\ArmsRotation.cs" />
     <Compile Include="Assets\Script\ArmsWalk.cs" />
     <Compile Include="Assets\Script\GameEngine.cs" />
@@ -69,6 +75,7 @@
     <Compile Include="Assets\Script\NPC_Action.cs" />
     <Compile Include="Assets\Script\PlayerController.cs" />
     <Compile Include="Assets\Script\PlayerViewController.cs" />
+    <Compile Include="Assets\Script\Skill1.cs" />
     <Compile Include="Assets\Script\SwordAction.cs" />
     <Compile Include="Assets\Script\UI_HP.cs" />
     <Compile Include="Assets\Script\WsClient.cs" />
@@ -151,6 +158,14 @@
     <Compile Include="Assets\websocket-sharp-master\websocket-sharp\WebSocketFrame.cs" />
     <Compile Include="Assets\websocket-sharp-master\websocket-sharp\WebSocketState.cs" />
     <None Include="Assets\websocket-sharp-master\LICENSE.txt" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\effect_distortion_mask.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\ParticleAddSoftEffect.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\Toon Blended Premmultiply.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\ParticlePremultiplyBlend.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\READ ME.txt" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\ParticleAddEffect.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\Toon Additive.shader" />
+    <None Include="Assets\AssetStore\Particlecollection_Free samples\Plugins\Effect\Shader\ParticleBlendEffect.shader" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/hungjih/Documents/Kill/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

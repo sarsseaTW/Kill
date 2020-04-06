@@ -159,6 +159,20 @@ public class GameEngine : MonoBehaviour
                     human_nj.Giri();
                 }
                 break;
+            case Message.ActionSkill:
+                {
+                    var data = JsonUtility.FromJson<ActionSkillMessage>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.ActionSkill();
+                }
+                break;
+            case Message.ActionSkill2:
+                {
+                    var data = JsonUtility.FromJson<ActionSkill2Message>(msg.Data);
+                    var human_nj = FindHumanNJ(data.UserID);
+                    human_nj.ActionSkill2();
+                }
+                break;
             case Message.ActionDamge:
                 {
                     var data = JsonUtility.FromJson<ActionDmgMessage>(msg.Data);
@@ -174,7 +188,6 @@ public class GameEngine : MonoBehaviour
                     {
                         killer.tokuten = killer.tokuten + human_nj.tokuten + 1;
                         killer.SetTokuten(killer.tokuten);
-                        Debug.Log("兇手分數為 : " + killer.tokuten);
                         if (killer.tokuten >= 100)
                         {
                             Send(Message.GameEnd, new GameEndMessage { UserID = killer.UserID });
@@ -297,6 +310,16 @@ public struct ActionSwordMessage
     public int UserID;
 }
 [Serializable]
+public struct ActionSkillMessage
+{
+    public int UserID;
+}
+[Serializable]
+public struct ActionSkill2Message
+{
+    public int UserID;
+}
+[Serializable]
 public struct ActionDmgMessage
 {
     public int UserID;
@@ -328,6 +351,8 @@ public partial struct Message
     public const string ExitUser = "exitUser";
     public const string Join = "join";
 
+    public const string ActionSkill = "actionSkill";
+    public const string ActionSkill2 = "actionSkill2";
     public const string ActionSword = "actionSword";
     public const string ActionShot = "actionShot";
     public const string ActionDamge = "actionDamage";

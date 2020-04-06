@@ -6,17 +6,14 @@ public class NPC_Action : MonoBehaviour
 {
     float WalkSpeed = 0.02f;
     int DestroyTime = 0;
-    GameObject NowObj;
-    GameObject SneakObj;
-    public GameObject body;
+
     public GameObject[] SneakList;
     bool tf;
+    int number = 0;
     // Start is called before the first frame update
     void Start()
     {
         GetComponent<Rigidbody>().freezeRotation = true;
-
-        NowObj = SneakList[0];
     }
 
     // Update is called once per frame
@@ -61,22 +58,19 @@ public class NPC_Action : MonoBehaviour
                     break;
                 case 3:
                     {
-                        //Debug.Log("Sneak");
-                        SneakObj = SneakList[Random.Range(0, 8)];
-
-                        NowObj.SetActive(false);
-                        SneakObj.SetActive(true);
-                        NowObj = SneakObj;
-                        SneakObj.SetActive(false);
-                        NowObj.SetActive(true);
+                        SneakList[number].SetActive(false);
+                        number = Random.Range(0, 10);
+                        SneakList[number].SetActive(true);
                     }
                     break;
             }
         }
         DestroyTime++;
-        if (DestroyTime == 3000)
+        if (DestroyTime == 1500)
         {
-            var arms = Instantiate(body);
+            SneakList[number].SetActive(false);
+            SneakList[0].SetActive(true);
+            var arms = Instantiate(gameObject);
             StartCoroutine(Dead());
             arms.SetActive(true);
             var x = (float)(-0.1 + Random.Range(0, 0.2f));
