@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 public class Human_NJ : MonoBehaviour
 {
+    #region Var
     //--------------------------------------------------------------------
     //---------------------User Init--------------------------------------
     //--------------------------------------------------------------------
@@ -65,9 +66,11 @@ public class Human_NJ : MonoBehaviour
     //--------------------------------------------------------------------
     //---------------------Skill------------------------------------------
     //--------------------------------------------------------------------
+    public GameObject CAM_Skill2Point;
     public GameObject CAM_SkillPoint;
     public GameObject Skill_Eff;
     public GameObject Skill_Eff2;
+    bool isSkill;
     //--------------------------------------------------------------------
     //---------------------Init-------------------------------------------
     //--------------------------------------------------------------------
@@ -76,6 +79,7 @@ public class Human_NJ : MonoBehaviour
     int updateTime_Walk;
     IEnumerator TimerEvent_Walk;
     IEnumerator TimerEvent_Skill;
+    #endregion
     void Start()
     {
         GetComponent<Rigidbody>().freezeRotation = true;
@@ -98,6 +102,10 @@ public class Human_NJ : MonoBehaviour
         {
             tokuten += 30;
         }
+        if (isShot)
+        {
+            shotPoint = rh.transform.position;
+        }
     }
     public void MainUserAction()
     {
@@ -115,6 +123,7 @@ public class Human_NJ : MonoBehaviour
             IsWalkStop = IsWalkStop
         });
     }
+    #region Jump
     //--------------------------------------------------------------------
     //---------------------User Jump--------------------------------------
     //--------------------------------------------------------------------
@@ -135,6 +144,8 @@ public class Human_NJ : MonoBehaviour
         Z = transform.position.z;
         MainUserAction();
     }
+    #endregion
+    #region Sneak
     //--------------------------------------------------------------------
     //---------------------User Sneak-------------------------------------
     //--------------------------------------------------------------------
@@ -180,6 +191,8 @@ public class Human_NJ : MonoBehaviour
             MainUserAction();
         }
     }
+    #endregion
+    #region Camera View Rotate
     //--------------------------------------------------------------------
     //---------------------User View Rotate-------------------------------
     //--------------------------------------------------------------------
@@ -200,6 +213,8 @@ public class Human_NJ : MonoBehaviour
         UserViewRotation = PlayerCamera.transform.localRotation;
         CAM.transform.localRotation = UserViewRotation;
     }
+    #endregion
+    #region Update Other Users
     //--------------------------------------------------------------------
     //---------------------Server Update User Static----------------------
     //-----------------------------同期用関数------------------------------
@@ -296,6 +311,8 @@ public class Human_NJ : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
     }
+    #endregion
+    #region Walk
     //--------------------------------------------------------------------
     //---------------------User Walk--------------------------------------
     //--------------------------------------------------------------------
@@ -320,6 +337,8 @@ public class Human_NJ : MonoBehaviour
         }
         updateTime_Walk++;
     }
+    #endregion
+    #region Attack
     //--------------------------------------------------------------------
     //-------------------User Attack--------------------------------------
     //--------------------------------------------------------------------
@@ -364,23 +383,44 @@ public class Human_NJ : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if ((other.gameObject.name.Contains("Sword")|| other.gameObject.name.Contains("Skill")) && Time.time - updateTime_DMG > updateTime)
+        if (!isSkill)
         {
-            updateTime_DMG = Time.time;
-
-            string gameObjName = other.gameObject.name;
-            gameObjName = gameObjName.Remove(gameObjName.IndexOf("S"), 5);
-            
-            if (UserID != int.Parse(gameObjName))
+            if ((other.gameObject.name.Contains("Skill2")))
             {
-                if (UserID == GameEngine.Instance.GameEngineID)
+                string gameObjName = other.gameObject.name;
+                gameObjName = gameObjName.Remove(gameObjName.IndexOf("S"), 6);
+
+                if (UserID != int.Parse(gameObjName))
                 {
-                    GameEngine.Instance.Send(Message.ActionDamge, new ActionDmgMessage
+                    if (UserID == GameEngine.Instance.GameEngineID)
                     {
-                        UserID = UserID,
-                        Dmg = 400,
-                        killID = int.Parse(gameObjName)
-                    });
+                        GameEngine.Instance.Send(Message.ActionDamge, new ActionDmgMessage
+                        {
+                            UserID = UserID,
+                            Dmg = 50,
+                            killID = int.Parse(gameObjName)
+                        });
+                    }
+                }
+            }
+            else if ((other.gameObject.name.Contains("Sword") || other.gameObject.name.Contains("Skill")) && Time.time - updateTime_DMG > updateTime)
+            {
+                updateTime_DMG = Time.time;
+
+                string gameObjName = other.gameObject.name;
+                gameObjName = gameObjName.Remove(gameObjName.IndexOf("S"), 5);
+
+                if (UserID != int.Parse(gameObjName))
+                {
+                    if (UserID == GameEngine.Instance.GameEngineID)
+                    {
+                        GameEngine.Instance.Send(Message.ActionDamge, new ActionDmgMessage
+                        {
+                            UserID = UserID,
+                            Dmg = 400,
+                            killID = int.Parse(gameObjName)
+                        });
+                    }
                 }
             }
         }
@@ -420,8 +460,11 @@ public class Human_NJ : MonoBehaviour
             transform.Rotate(Vector3.forward * 1.5f);
             yield return null;
         }
+        StopAllCoroutines();
         Destroy(gameObject);
     }
+    #endregion
+    #region tokutenban
     //--------------------------------------------------------------------
     //---------------------Update tokutenbann-----------------------------
     //--------------------------------------------------------------------
@@ -438,6 +481,8 @@ public class Human_NJ : MonoBehaviour
     {
         tokutenbenn.text = tokutenbannText;
     }
+    #endregion
+    #region skill
     //--------------------------------------------------------------------
     //---------------------Update Skill-----------------------------------
     //--------------------------------------------------------------------
@@ -447,10 +492,23 @@ public class Human_NJ : MonoBehaviour
         PlayerCamera.transform.position = CAM_SkillPoint.transform.position;
         PlayerCamera.transform.localRotation = CAM_SkillPoint.transform.localRotation;
     }
-    public void ActionSkill()
+    public void skill2CAM()
     {
         if (IsDead) { return; }
-        Physics.IgnoreLayerCollision(0, 9, true);
+        PlayerCamera.transform.position = CAM_Skill2Point.transform.position;
+        PlayerCamera.transform.localRotation = CAM_Skill2Point.transform.localRotation;
+    }
+    #region skill1
+    public void ActionSkill()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            return;
+        }
+        isSkill = true;
+        Physics.IgnoreLayerCollision(9,10, true);
         Hp -= 50;
         if (IsSneak)
         {
@@ -465,11 +523,242 @@ public class Human_NJ : MonoBehaviour
         skill.gameObject.name = UserID + "Skill";
         skill.transform.SetParent(gameObject.transform, false);
         
+        transform.position = new Vector3(X, Y, Z);
+
         StartCoroutine(Skill_1hit());
     }
+    //---------- 1 hit -------------------------
+    public IEnumerator Skill_1hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_1hit());
+            yield return null;
+        }
+        yield return new WaitForSeconds(3);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_2Read());
+    }
+    //---------- 2 hit -------------------------
+    public IEnumerator Skill_2Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_2Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_2hit());
+    }
+    public IEnumerator Skill_2hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_2hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_3Read());
+    }
+    //---------- 3 hit -------------------------
+    public IEnumerator Skill_3Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_3Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_3hit());
+    }
+    public IEnumerator Skill_3hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_3hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_4Read());
+    }
+    //---------- 4 hit -------------------------
+    public IEnumerator Skill_4Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_4Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_4hit());
+    }
+    public IEnumerator Skill_4hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_4hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_5Read());
+    }
+    //---------- 5 hit -------------------------
+    public IEnumerator Skill_5Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_5Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_5hit());
+    }
+    public IEnumerator Skill_5hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_5hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
+        StartCoroutine(Skill_6Read());
+    }
+    //---------- 6 hit -------------------------
+    public IEnumerator Skill_6Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_6Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+        transform.Rotate(new Vector3(0, 150, 0));
+        StartCoroutine(Skill_6hit());
+    }
+    public IEnumerator Skill_6hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_6hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.forward*1f, ForceMode.Impulse);
+        StartCoroutine(Skill_7Read());
+    }
+    //---------- 7 hit -------------------------
+    public IEnumerator Skill_7Read()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_7Read());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.8f);
+
+        StartCoroutine(Skill_7hit());
+    }
+    public IEnumerator Skill_7hit()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_7hit());
+            yield return null;
+        }
+        MainUserAction();
+        yield return new WaitForSeconds(0.1f);
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.up*3, ForceMode.Impulse);
+        StartCoroutine(Skill_CloseEff());
+    }
+    //---------- 7 hit -------------------------
+    public IEnumerator Skill_CloseEff()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill_CloseEff());
+            yield return null;
+        }
+        yield return new WaitForSeconds(0.5f);
+        isSkill = false;
+        Physics.IgnoreLayerCollision(9, 10, false);
+        PlayerController.IsSkill = false;
+
+        PlayerCamera.transform.localPosition = CameraV3;
+        PlayerCamera.transform.localRotation = CAM.transform.localRotation;
+        MainUserAction();
+    }
+    #endregion
+    #region skill2
+
+    RaycastHit rh;
+    Ray ray;
+    Vector3 shotPoint;
+    string shotname;
+    int count;
+    bool isShot;
     public void ActionSkill2()
     {
-        if (IsDead) { return; }
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            return;
+        }
+        isSkill = true;
         Physics.IgnoreLayerCollision(0, 9, true);
         Hp -= 200;
         if (IsSneak)
@@ -480,126 +769,92 @@ public class Human_NJ : MonoBehaviour
             SneakObj.SetActive(false);
             MainUserAction();
         }
-        var skill = Instantiate(Skill_Eff2);
-        skill.SetActive(true);
-        skill.gameObject.name = UserID + "Skill2";
-        skill.transform.SetParent(gameObject.transform, false);
 
-        StartCoroutine(Skill_1hit());
-    }
-    //---------- 1 hit -------------------------
-    public IEnumerator Skill_1hit()
-    {
-        yield return new WaitForSeconds(3);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
-        StartCoroutine(Skill_2Read());
-    }
-    //---------- 2 hit -------------------------
-    public IEnumerator Skill_2Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
-        transform.Rotate(new Vector3(0, 150, 0));
-        StartCoroutine(Skill_2hit());
-    }
-    public IEnumerator Skill_2hit()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
-        StartCoroutine(Skill_3Read());
-    }
-    //---------- 3 hit -------------------------
-    public IEnumerator Skill_3Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
-        transform.Rotate(new Vector3(0, 150, 0));
-        StartCoroutine(Skill_3hit());
-    }
-    public IEnumerator Skill_3hit()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
-        StartCoroutine(Skill_4Read());
-    }
-    //---------- 4 hit -------------------------
-    public IEnumerator Skill_4Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
-        transform.Rotate(new Vector3(0, 150, 0));
-        StartCoroutine(Skill_4hit());
-    }
-    public IEnumerator Skill_4hit()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
-        StartCoroutine(Skill_5Read());
-    }
-    //---------- 5 hit -------------------------
-    public IEnumerator Skill_5Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
-        transform.Rotate(new Vector3(0, 150, 0));
-        StartCoroutine(Skill_5hit());
-    }
-    public IEnumerator Skill_5hit()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 2, ForceMode.Impulse);
-        StartCoroutine(Skill_6Read());
-    }
-    //---------- 6 hit -------------------------
-    public IEnumerator Skill_6Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
-        transform.Rotate(new Vector3(0, 150, 0));
-        StartCoroutine(Skill_6hit());
-    }
-    public IEnumerator Skill_6hit()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.forward*1f, ForceMode.Impulse);
-        StartCoroutine(Skill_7Read());
-    }
-    //---------- 7 hit -------------------------
-    public IEnumerator Skill_7Read()
-    {
-        MainUserAction();
-        yield return new WaitForSeconds(0.8f);
+        transform.position = new Vector3(X, Y, Z);
 
-        StartCoroutine(Skill_7hit());
+        Vector3 fwd = CAM.transform.TransformDirection(Vector3.forward);
+        if (Physics.Raycast(CAM.transform.position, fwd,out rh, 100))
+        {
+            isShot = true;
+        }
+
+        transform.GetComponent<Rigidbody>().useGravity = false;
+        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.1f, 0);
+        transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.1f, ForceMode.Impulse);
+        StartCoroutine(Skill2_UP());
     }
-    public IEnumerator Skill_7hit()
+    public IEnumerator Skill2_UP()
     {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill2_UP());
+            yield return null;
+        }
         MainUserAction();
-        yield return new WaitForSeconds(0.1f);
-        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 1f, 0);
-        transform.GetComponent<Rigidbody>().AddForce(transform.up*3, ForceMode.Impulse);
-        StartCoroutine(Skill_CloseEff());
+        yield return new WaitForSeconds(2);
+        while(transform.position.y <= 1.5f)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = false;
+            transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.1f, 0);
+            transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.1f, ForceMode.Impulse);
+        }
+        transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+
+        int f = 20;
+        while (f > 0)
+        {
+            var skill = Instantiate(Skill_Eff2);
+            skill.SetActive(true);
+            skill.gameObject.name = UserID + "Skill2";
+            skill.transform.SetParent(gameObject.transform, false);
+            skill.transform.position = transform.position + transform.TransformDirection(new Vector3(0.0045f, 0, 0.032f));
+            f -= 1;
+            yield return new WaitForSeconds(0.1f);
+        }
+        count = transform.childCount;
+        StartCoroutine(Skill2_Shot());
     }
-    //---------- 7 hit -------------------------
-    public IEnumerator Skill_CloseEff()
+    public IEnumerator Skill2_Shot()
     {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill2_Shot());
+            yield return null;
+        }
+        yield return new WaitForSeconds(1);
+        for (int i = 0; i < count; i++)
+        {
+            yield return new WaitForSeconds(0.1f);
+            if (transform.GetChild(i).name == (UserID + "Skill2"))
+            {
+                transform.GetChild(i).LookAt(shotPoint);
+                transform.GetChild(i).GetComponent<Rigidbody>().AddForce(transform.GetChild(i).forward * 1f, ForceMode.Impulse);
+            }
+        }
+        StartCoroutine(Skill2_CloseEff());
+    }
+    public IEnumerator Skill2_CloseEff()
+    {
+        if (IsDead)
+        {
+            transform.GetComponent<Rigidbody>().useGravity = true;
+            PlayerController.IsSkill = false;
+            StopCoroutine(Skill2_CloseEff());
+            yield return null;
+        }
         yield return new WaitForSeconds(0.5f);
-        Physics.IgnoreLayerCollision(0, 9, false);
+        isSkill = false;
+        transform.GetComponent<Rigidbody>().useGravity = true;
         PlayerController.IsSkill = false;
-
+        isShot = false;
         PlayerCamera.transform.localPosition = CameraV3;
         PlayerCamera.transform.localRotation = CAM.transform.localRotation;
         MainUserAction();
     }
+    #endregion skill2
+    #endregion skill
 }

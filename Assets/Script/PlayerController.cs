@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public void Init(Human_NJ human_nj)
     {
         Human_NJ = human_nj;
+        IsSkill = false;
     }
     // Start is called before the first frame update
     void Start()
@@ -115,14 +116,22 @@ public class PlayerController : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.E))
             {
+                if (Human_NJ.Hp <= 50)
+                {
+                    return;
+                }
                 IsSkill = true;
                 Human_NJ.skillCAM();
                 GameEngine.Instance.Send(Message.ActionSkill, new ActionSkillMessage { UserID = Human_NJ.UserID });
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
+                if (Human_NJ.Hp <= 200)
+                {
+                    return;
+                }
                 IsSkill = true;
-                Human_NJ.skillCAM();
+                Human_NJ.skill2CAM();
                 GameEngine.Instance.Send(Message.ActionSkill2, new ActionSkill2Message { UserID = Human_NJ.UserID });
             }
         }
