@@ -15,11 +15,14 @@ public class GameEngine : MonoBehaviour
     public PlayerController Player;
 
     public GameObject Human_NJ;
+    public GameObject NPC;
     public static GameEngine Instance { get; private set; }
 
     WsClient _client;
     List<Human_NJ> human_nj_List = new List<Human_NJ>();
+    List<NPC_Action> npc_List = new List<NPC_Action>();
     List<UserData> _users = new List<UserData>();
+    List<NPCData> _npcs = new List<NPCData>();
     int _frameCount;
     public bool GameStarted { get; private set; } = false;
     Stack<Message> _message = new Stack<Message>();
@@ -27,6 +30,7 @@ public class GameEngine : MonoBehaviour
     {
         ExitBtn.SetActive(false);
         Human_NJ.SetActive(false);
+        NPC.SetActive(false);
         Instance = this;
     }
     void Start()
@@ -49,14 +53,6 @@ public class GameEngine : MonoBehaviour
     {
         _client.Dispose();
     }
-    private void FixedUpdate()
-    {
-        //while(_message.Count > 0)
-        //{
-        //    var msg = _message.Pop();
-        //    updateMessageForGameStarted(msg);
-        //}
-    }
     void Update()
     {
         while (_message.Count > 0)
@@ -69,6 +65,42 @@ public class GameEngine : MonoBehaviour
     {
         switch (msg.Type)
         {
+            case Message.NPCAction:
+                {
+                    var data = JsonUtility.FromJson<NPCAction>(msg.Data);
+                    _npcs = data.npc;
+                    for (int i = 0; i < _npcs.Count; i++)
+                    {
+                        var npcID = FindNPC(_npcs[i].NPC_ID);
+                        if (npcID != null)
+                        {
+                            npcID.Action = _npcs[i].Action;
+
+                            npcID.GetAction(npcID.Action);
+                            Send(Message.UpdateNPCDate, new UpdateNPCDate
+                            {
+                                NPC_ID = npcID.NPC_ID,
+                                NPC_pos = npcID.setPos()
+                            });
+                        }
+                    }
+                }
+                break;
+            case Message.UpdateNPCDate:
+                {
+                    var data = JsonUtility.FromJson<UpdateNPCDate>(msg.Data);
+                    var npc = FindNPC(data.NPC_ID);
+
+                    //Debug.Log(data.NPC_pos);
+                    //print(data.NPC_pos.x);
+                    //print(data.NPC_pos.y);
+                    //print(data.NPC_pos.z);
+
+                    npc.X = data.NPC_pos.x;
+                    npc.Y = data.NPC_pos.y;
+                    npc.Z = data.NPC_pos.z;
+                }
+                break;
             case Message.Join:
                 _client.SendMessage(Message.GameStart, "Human_NJ");
                 break;
@@ -97,7 +129,14 @@ public class GameEngine : MonoBehaviour
                                 MainCamera.transform.localPosition = new Vector3(0, (float)0.0163, (float)-0.004899);
                                 GameEngineID = obj.UserID;
                                 Player.Init(obj);
+
                             }
+                        }
+                        _npcs = data.npc;
+                        foreach (var npc in _npcs)
+                        {
+                            var n = createNPC(npc);
+                            npc_List.Add(n);
                         }
                     }
                     GameStarted = true;
@@ -245,6 +284,10 @@ public class GameEngine : MonoBehaviour
     {
         return human_nj_List.FirstOrDefault(v => v.UserID == id);
     }
+    public NPC_Action FindNPC(int id)
+    {
+        return npc_List.FirstOrDefault(v => v.NPC_ID == id);
+    }
     Human_NJ createPlayer(UserData u)
     {
         var obj = Instantiate(Human_NJ);
@@ -259,6 +302,20 @@ public class GameEngine : MonoBehaviour
         human_nj.Hp = u.Hp;
         human_nj.Dmg = u.Dmg;
         return human_nj;
+    }
+    NPC_Action createNPC(NPCData n)
+    {
+        var obj = Instantiate(NPC);
+        var pos = new Vector3(n.X, n.Y, n.Z);
+        obj.transform.position = pos;
+        obj.SetActive(true);
+        var npc = obj.GetComponent<NPC_Action>();
+        npc.X = n.X;
+        npc.Y = n.Y;
+        npc.Z = n.Z;
+        npc.NPC_ID = n.NPC_ID;
+        npc.Action = n.Action;
+        return npc;
     }
     public void OnClickRetry()
     {
@@ -289,10 +346,31 @@ public struct UserData
     public int tokuten;
 }
 [Serializable]
+public struct NPCData
+{
+    public int NPC_ID;
+    public float X;
+    public float Y;
+    public float Z;
+    public int Action;
+}
+[Serializable]
+public struct UpdateNPCDate
+{
+    public int NPC_ID;
+    public Vector3 NPC_pos;
+}
+[Serializable]
+class NPCAction
+{
+    public List<NPCData> npc;
+}
+[Serializable]
 class GameStartMessage
 {
     public List<UserData> Users;
     public UserData Player;
+    public List<NPCData> npc;
 }
 [Serializable]
 class ExitUserMessage
@@ -360,4 +438,7 @@ public partial struct Message
     public const string UpdatePlayerStatic = "updatePlayerStatic";
 
     public const string GameEnd = "gameEnd";
+
+    public const string NPCAction = "NPCAction";
+    public const string UpdateNPCDate = "UpdateNPCDate";
 }

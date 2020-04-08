@@ -760,7 +760,7 @@ public class Human_NJ : MonoBehaviour
         }
         isSkill = true;
         Physics.IgnoreLayerCollision(0, 9, true);
-        Hp -= 200;
+        Hp -= 100;
         if (IsSneak)
         {
             IsSneak = false;
@@ -778,6 +778,7 @@ public class Human_NJ : MonoBehaviour
             isShot = true;
         }
 
+        transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
         transform.GetComponent<Rigidbody>().useGravity = false;
         transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.1f, 0);
         transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.1f, ForceMode.Impulse);
@@ -794,12 +795,6 @@ public class Human_NJ : MonoBehaviour
         }
         MainUserAction();
         yield return new WaitForSeconds(2);
-        while(transform.position.y <= 1.5f)
-        {
-            transform.GetComponent<Rigidbody>().useGravity = false;
-            transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.1f, 0);
-            transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.1f, ForceMode.Impulse);
-        }
         transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
 
         int f = 20;
@@ -846,7 +841,7 @@ public class Human_NJ : MonoBehaviour
             StopCoroutine(Skill2_CloseEff());
             yield return null;
         }
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(3f);
         isSkill = false;
         transform.GetComponent<Rigidbody>().useGravity = true;
         PlayerController.IsSkill = false;

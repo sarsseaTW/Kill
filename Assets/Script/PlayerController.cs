@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     float swordRate = 1f;
     float nextSword = 0;
 
-    float jumpRate = 1f;
+    float jumpRate = 0.8f;
     float nextJump = 0;
 
     float DobjumpRate = 1f;
@@ -126,7 +126,7 @@ public class PlayerController : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.R))
             {
-                if (Human_NJ.Hp <= 200)
+                if (Human_NJ.Hp <= 100)
                 {
                     return;
                 }

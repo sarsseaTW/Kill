@@ -8,7 +8,38 @@ class Server{
         this.ws.on('connection',this.connectionListener.bind(this))
         p(`server running at port ${port}\n`)
         this.time = 0;
+        
+        this.NPC = []
+        this.NPC_ID = 1
+        //------------------Create NPC
+        setInterval((() => {
+            if(this.NPC.length < 1){
+              var npc = this.createNPC()
+              this.NPC.push(npc)
+            }
+          }).bind(this), 1)
+        //------------------NPC Action
+        setInterval((() => {
+            for(let i=0;i<this.NPC.length;i++) {
+              this.NPC[i].Action = Math.random() * 4
+            }
+            this.broadcast(this.ws, JSON.stringify({
+              Type: 'NPCAction',
+              Data: JSON.stringify({
+                npc: this.NPC
+              })
+            }))
+          }).bind(this), 2000)
     }
+    createNPC() {
+        return {
+          NPC_ID: this.NPC_ID++,
+          X: 0,
+          Y: 1,
+          Z: 0,
+          Action: undefined
+        }
+      }
     connectionListener(ws,require){
         this.clients = this.clients.filter(c => c.readyState === 1)
         ws.name = ws._socket.remoteAddress + ":" + `${Math.random()}`.slice(2,4)
@@ -34,6 +65,7 @@ class Server{
                         Data: JSON.stringify({
                             Users:this.users,
                             Player:c,
+                            npc:this.NPC
                         }),
                     }))
                 break

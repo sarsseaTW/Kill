@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class NPC_Action : MonoBehaviour
 {
-    float WalkSpeed = 0.02f;
+    public int NPC_ID;
+    public float X;
+    public float Y;
+    public float Z;
+    public int Action;
+
+    //-----------------
+    float WalkSpeed = 1f;
     int DestroyTime = 0;
 
     public GameObject[] SneakList;
@@ -19,72 +26,51 @@ public class NPC_Action : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (DestroyTime % 60 == 0 && DestroyTime<3000)
-        {
-            switch (Random.Range(0, 4))
-            {
-                case 0:
-                    {
-                        //Debug.Log("Walk");
-                        int F = 100;
-                        while (F > 0)
-                        {
-                            transform.GetComponent<Rigidbody>().AddForce(transform.forward * WalkSpeed, ForceMode.Impulse);
-                            F -= 1;
-                        }
-                    }
-                    break;
-                case 1:
-                    {
-                        //Debug.Log("Rotate");
-                        var ro = transform.localRotation.x;
-                        int F = Random.Range(0,90);
-                        while (F > 0)
-                        {
-                            ro += 1f;
-                            if (ro >= 360) ro = 0;
-                            transform.Rotate(0, ro, 0);
-                            F -= 1;
-                        }
-                    }
-                    break;
-                case 2:
-                    {
-                        //Debug.Log("Jump");
-                        transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.5f, 0);
-                        transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.5f, ForceMode.Impulse);
-                        transform.GetComponent<Rigidbody>().AddForce(transform.forward * 1, ForceMode.Impulse);
-                    }
-                    break;
-                case 3:
-                    {
-                        SneakList[number].SetActive(false);
-                        number = Random.Range(0, 10);
-                        SneakList[number].SetActive(true);
-                    }
-                    break;
-            }
-        }
-        DestroyTime++;
-        if (DestroyTime == 1500)
-        {
-            SneakList[number].SetActive(false);
-            SneakList[0].SetActive(true);
-            var arms = Instantiate(gameObject);
-            StartCoroutine(Dead());
-            arms.SetActive(true);
-            var x = (float)(-0.1 + Random.Range(0, 0.2f));
-            var z = (float)(-0.1 + Random.Range(0, 0.2f));
-            arms.transform.position = new Vector3(x, 1.5f, z);
-        }
+        X = transform.position.x;
+        Y = transform.position.y;
+        Z = transform.position.z;
     }
-    public IEnumerator Dead()
+    public void GetAction(int action)
     {
-        while (transform.eulerAngles.z < 80)
+        switch (action)
         {
-            transform.Rotate(Vector3.forward * 1.5f);
-            yield return null;
+            case 0:
+                {
+                   // Debug.Log(NPC_ID + "  Walk");
+                    transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                    transform.GetComponent<Rigidbody>().AddForce(transform.forward * WalkSpeed, ForceMode.Impulse);
+                }
+                break;
+            case 1:
+                {
+                   // Debug.Log(NPC_ID + "  Rotate");
+                    transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                    transform.Rotate(0, 45, 0);
+                }
+                break;
+            case 2:
+                {
+                    //Debug.Log(NPC_ID + "  Jump");
+                    transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                    transform.GetComponent<Rigidbody>().velocity += new Vector3(0, 0.5f, 0);
+                    transform.GetComponent<Rigidbody>().AddForce(transform.up * 0.5f, ForceMode.Impulse);
+                    transform.GetComponent<Rigidbody>().AddForce(transform.forward * 1, ForceMode.Impulse);
+                }
+                break;
+            case 3:
+                {
+                    //Debug.Log(NPC_ID + "  Sneak");
+                    transform.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+                    SneakList[number].SetActive(false);
+                    number = Random.Range(0, 10);
+                    SneakList[number].SetActive(true);
+                }
+                break;
         }
-        Destroy(gameObject);
+
+    }
+    public Vector3 setPos()
+    {
+        return new Vector3(X, Y, Z);
     }
 }
